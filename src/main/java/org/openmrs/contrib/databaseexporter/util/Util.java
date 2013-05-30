@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter;
+package org.openmrs.contrib.databaseexporter.util;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;

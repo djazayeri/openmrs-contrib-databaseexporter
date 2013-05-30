@@ -13,6 +13,8 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
+import org.openmrs.contrib.databaseexporter.util.ListMap;
+
 import java.util.List;
 
 /**

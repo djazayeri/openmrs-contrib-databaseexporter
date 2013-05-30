@@ -14,7 +14,7 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
-import org.openmrs.contrib.databaseexporter.AgeRange;
+import org.openmrs.contrib.databaseexporter.util.AgeRange;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;

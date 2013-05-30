@@ -11,12 +11,16 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter;
+package org.openmrs.contrib.databaseexporter.util;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.openmrs.contrib.databaseexporter.DatabaseCredentials;
+import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.util.ListMap;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
