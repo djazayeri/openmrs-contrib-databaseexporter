@@ -65,7 +65,15 @@ public class DatabaseExporter {
 						for (String columnName : tableConfig.getColumnConstraints().keySet()) {
 							List<Object> columnValues = tableConfig.getColumnConstraints().get(columnName);
 							query.append(" where ").append(columnName);
-							query.append(" in (").append(Util.toString(columnValues)).append(")");
+							query.append(" in (");
+							for (Iterator<Object> i = columnValues.iterator(); i.hasNext();) {
+								Object columnValue = i.next();
+								if (columnValue instanceof String) {
+									columnValue = "'" + columnValue + "'";
+								}
+								query.append(columnValue).append(i.hasNext() ? "," : "");
+							}
+							query.append(")");
 						}
 					}
 

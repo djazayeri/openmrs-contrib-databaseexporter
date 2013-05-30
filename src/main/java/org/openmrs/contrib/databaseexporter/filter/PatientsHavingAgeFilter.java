@@ -28,7 +28,7 @@ public class PatientsHavingAgeFilter extends PatientFilter {
 
 	//***** PROPERTIES *****
 
-	private Integer numberPerAgeRange;
+	private Integer numberPerAgeRange = 10; // Default to 10
 	private List<AgeRange> ageRanges;
 
 	//***** CONSTRUCTORS *****
@@ -41,17 +41,17 @@ public class PatientsHavingAgeFilter extends PatientFilter {
 	public Collection<Integer> getPatientIds(ExportContext context) {
 		List<Integer> ret = new ArrayList<Integer>();
 		for (AgeRange ar : getAgeRanges()) {
-			StringBuilder query = new StringBuilder("select p.patient_id from patient p, person n where p.patient_id = n.person_id");
+			StringBuilder q = new StringBuilder();
+			q.append("select p.patient_id from patient p, person n ");
+			q.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id");
 			if (ar.getMinAge() != null) {
-				query.append(" and datediff(CURRENT_DATE, n.birthdate)/365.25 >= " + ar.getMinAge());
+				q.append(" and datediff(CURRENT_DATE, n.birthdate)/365.25 >= " + ar.getMinAge());
 			}
 			if (ar.getMaxAge() != null) {
-				query.append(" AND datediff(CURRENT_DATE, n.birthdate)/365.25 <= " + ar.getMaxAge());
+				q.append(" AND datediff(CURRENT_DATE, n.birthdate)/365.25 <= " + ar.getMaxAge());
 			}
-			if (numberPerAgeRange != null) {
-				query.append(" limit " + numberPerAgeRange);
-			}
-			ret.addAll(context.executeQuery(query.toString(), new ColumnListHandler<Integer>()));
+			q.append(" order by rand() limit ").append(numberPerAgeRange);
+			ret.addAll(context.executeQuery(q.toString(), new ColumnListHandler<Integer>()));
 		}
 		return ret;
 	}

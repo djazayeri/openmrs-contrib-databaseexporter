@@ -47,7 +47,7 @@ public class ExportContext {
 
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
 		try {
-			System.out.println("Query: " + sql + (params != null ? " (" + Util.toString(params) + ")" : ""));
+			//System.out.println("Query: " + sql + (params != null ? " (" + Util.toString(params) + ")" : ""));
 			QueryRunner runner = new QueryRunner();
 			return runner.query(connection, sql, handler, params);
 		}
