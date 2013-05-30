@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.filter.TableFilter;
+import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class Configuration {
 
 	private TableFilter tableFilter;
 	private List<RowFilter> rowFilters;
+	private List<RowTransform> rowTransforms;
 
 	//***** CONSTRUCTORS *****
 
@@ -87,5 +89,16 @@ public class Configuration {
 
 	public void setRowFilters(List<RowFilter> rowFilters) {
 		this.rowFilters = rowFilters;
+	}
+
+	public List<RowTransform> getRowTransforms() {
+		if (rowTransforms == null) {
+			rowTransforms = new ArrayList<RowTransform>();
+		}
+		return rowTransforms;
+	}
+
+	public void setRowTransforms(List<RowTransform> rowTransforms) {
+		this.rowTransforms = rowTransforms;
 	}
 }

@@ -101,3 +101,12 @@ openmrs-contrib-databaseexporter
 			"columnName": "property",
 			"patterns": ["%.started","%.database_version","%.mandatory"]
 		}
+
+
+		"rowTransforms": [
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
+				"tableAndColumnList": ["obs.value_text"],
+				"replacement": "Value replaced during de-identification ${obs_id}"
+			}
+		]

@@ -30,5 +30,12 @@ public class Util {
 		return toString(Arrays.asList(c));
 	}
 
+	public static String nvlStr(Object o, String valueIfNull) {
+		if (o == null || o.equals("")) {
+			return valueIfNull;
+		}
+		return o.toString();
+	}
+
 }
 

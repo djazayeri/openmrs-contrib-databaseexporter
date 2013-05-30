@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
 import java.io.FileOutputStream;
@@ -33,7 +34,7 @@ public class DatabaseExporter {
 
 	public DatabaseExporter() { }
 
-	public static void export(Configuration configuration) throws Exception {
+	public static void export(final Configuration configuration) throws Exception {
 
 		FileOutputStream fos = null;
 		Connection connection = null;
@@ -44,7 +45,7 @@ public class DatabaseExporter {
 			OutputStreamWriter osWriter = new OutputStreamWriter(fos, "UTF-8");
 			PrintWriter out = new PrintWriter(osWriter);
 
-			ExportContext context = new ExportContext(configuration, connection, out);
+			final ExportContext context = new ExportContext(configuration, connection, out);
 
 			for (RowFilter filter : configuration.getRowFilters()) {
 				filter.applyFilters(context);
@@ -80,23 +81,25 @@ public class DatabaseExporter {
 						}
 					}
 
-					List<String> rows = context.executeQuery(query.toString(), new ResultSetHandler<List<String>>() {
+					List<TableRow> rows = context.executeQuery(query.toString(), new ResultSetHandler<List<TableRow>>() {
 
-						public List<String> handle(ResultSet rs) throws SQLException {
+						public List<TableRow> handle(ResultSet rs) throws SQLException {
 
-							List<String> results = new ArrayList<String>();
+							List<TableRow> results = new ArrayList<TableRow>();
 							ResultSetMetaData md = rs.getMetaData();
 							int numColumns = md.getColumnCount();
 
 							while (rs.next()) {
-								StringBuilder row = new StringBuilder("(");
-
+								TableRow row = new TableRow(table);
 								for (int i = 1; i <= numColumns; i++) {
-									ColumnValue value = new ColumnValue(table, md.getColumnName(i), md.getColumnType(i), rs.getObject(i));
-									row.append(i != 1 ? "," : "").append(value.getValueForExport());
+									String columnName = md.getColumnName(i);
+									ColumnValue value = new ColumnValue(table, columnName, md.getColumnType(i), rs.getObject(i));
+									row.addColumnValue(columnName, value);
 								}
-								row.append(")");
-								results.add(row.toString());
+								for (RowTransform transform : configuration.getRowTransforms()) {
+									transform.applyTransform(row, context);
+								}
+								results.add(row);
 							}
 							return results;
 						}
@@ -106,8 +109,17 @@ public class DatabaseExporter {
 
 					if (rows.size() > 0) {
 						out.println("INSERT INTO " + table + " VALUES ");
-						for (Iterator<String> i = rows.iterator(); i.hasNext();) {
-							out.println("    " + i.next() + (i.hasNext() ? "," : ""));
+						for (Iterator<TableRow> i = rows.iterator(); i.hasNext();) {
+							TableRow row = i.next();
+							out.print("    (");
+							for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {
+								ColumnValue columnValue = valIter.next();
+								out.print(columnValue.getValueForExport());
+								if (valIter.hasNext()) {
+									out.print(",");
+								}
+							}
+							out.println(")" + (i.hasNext() ? "," : ""));
 						}
 						out.println(";");
 					}
