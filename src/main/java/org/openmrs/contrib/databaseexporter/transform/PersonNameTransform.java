@@ -54,6 +54,7 @@ public class PersonNameTransform extends RowTransform {
 		if (row.getTableName().equals("person_name")) {
 
 			String givenNameStart = (String)row.getRawValue("given_name");
+			String middleNameStart = (String)row.getRawValue("middle_name");
 			List<String> givenNameList = getReplacements("given", true, row, context);
 
 			String familyNameStart = (String)row.getRawValue("family_name");
@@ -61,7 +62,7 @@ public class PersonNameTransform extends RowTransform {
 
 			row.setRawValue("prefix", null);
 			row.setRawValue("given_name", getReplacement(givenNameStart, givenNameList));
-			row.setRawValue("middle_name", null);
+			row.setRawValue("middle_name", getReplacement(middleNameStart, givenNameList));
 			row.setRawValue("family_name_prefix", null);
 			row.setRawValue("family_name", getReplacement(familyNameStart, familyNameList));
 			row.setRawValue("family_name2", null);
