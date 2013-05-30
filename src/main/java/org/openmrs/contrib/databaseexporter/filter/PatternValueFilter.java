@@ -23,22 +23,41 @@ import java.util.List;
 /**
  * Row filter which returns those rows that match the passed values
  */
-public class GlobalPropertyFilter extends RowFilter {
+public class PatternValueFilter extends RowFilter {
 
+	private String tableName;
+	private String columnName;
+	private String constraints;
 	private List<String> patterns; // This is not a regular expression, but is in the format supported by the "like" function in mysql
 
-	public GlobalPropertyFilter() {}
+	public PatternValueFilter() {}
 
 	@Override
 	public void applyFilters(ExportContext context) {
 		StringBuilder q = new StringBuilder();
-		q.append("select property from global_property where ");
+		q.append("select " + columnName + " from " + tableName + " where ");
 		for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
 			String p = i.next();
-			q.append("property like '" + p + "'").append(i.hasNext() ? " or " : "");
+			q.append(columnName + " like '" + p + "'").append(i.hasNext() ? " or " : "");
 		}
 		List<Object> properties = context.executeQuery(q.toString(), new ColumnListHandler<Object>());
-		applyConstraints("global_property", "property", properties, context);
+		applyConstraints(tableName, columnName, properties, context);
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
 	}
 
 	public List<String> getPatterns() {

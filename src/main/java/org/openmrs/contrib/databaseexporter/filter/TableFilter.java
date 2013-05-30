@@ -49,15 +49,18 @@ public class TableFilter {
 		List<String> allTables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
 
 		for (String tableName : allTables) {
-			boolean includeSchema = getIncludeSchema().isEmpty() || isInList(tableName, getIncludeSchema());
-			includeSchema = includeSchema && !isInList(tableName, getExcludeSchema());
-			if (includeSchema) {
-				TableConfig config = new TableConfig(tableName);
-				boolean includeData = getIncludeData().isEmpty() || isInList(tableName, getIncludeData());
-				includeData = includeData && !isInList(tableName, getExcludeData());
-				config.setExportData(includeData);
-				tablesToDump.put(tableName, config);
-			}
+			TableConfig config = new TableConfig(tableName);
+
+			boolean exportSchema = getIncludeSchema().isEmpty() || isInList(tableName, getIncludeSchema());
+			exportSchema = exportSchema && !isInList(tableName, getExcludeSchema());
+
+			boolean exportData = getIncludeData().isEmpty() || isInList(tableName, getIncludeData());
+			exportData = exportData && !isInList(tableName, getExcludeData());
+
+			config.setExportSchema(exportSchema);
+			config.setExportData(exportData);
+
+			tablesToDump.put(tableName, config);
 		}
 		return tablesToDump;
 	}

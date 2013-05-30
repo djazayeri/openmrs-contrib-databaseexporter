@@ -23,6 +23,7 @@ public class TableConfig {
 	//***** PROPERTIES *****
 
 	private String tableName;
+	private boolean exportSchema = true;
 	private boolean exportData = true;
 	private ListMap<String, Object> columnConstraints;
 
@@ -40,6 +41,14 @@ public class TableConfig {
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public boolean isExportSchema() {
+		return exportSchema;
+	}
+
+	public void setExportSchema(boolean exportSchema) {
+		this.exportSchema = exportSchema;
 	}
 
 	public boolean isExportData() {

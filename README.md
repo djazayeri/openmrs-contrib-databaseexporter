@@ -44,7 +44,7 @@ openmrs-contrib-databaseexporter
 
 
 		{
-			"@class" : "org.openmrs.contrib.databaseexporter.filter.ColumnValueFilter",
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.DiscreteValueFilter",
 			"tableName": "patient_identifier_type",
 			"columnName": "patient_identifier_type_id",
 			"values": [5,2]
@@ -88,12 +88,16 @@ openmrs-contrib-databaseexporter
 			"numberDead": 5
 		}
 
-				{
-        			"@class" : "org.openmrs.contrib.databaseexporter.filter.GlobalPropertyFilter",
-        			"patterns": ["htmlform%"]
-        		},
-        		{
-        			"@class" : "org.openmrs.contrib.databaseexporter.filter.GlobalPropertyFilter",
-        			"exclusionFilter": true,
-        			"patterns": ["%.started","%.database_version","%.mandatory"]
-        		}
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatternValueFilter",
+			"tableName": "global_property",
+			"columnName": "property",
+			"patterns": ["htmlform%"]
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatternValueFilter",
+			"exclusionFilter": true,
+			"tableName": "global_property",
+			"columnName": "property",
+			"patterns": ["%.started","%.database_version","%.mandatory"]
+		}

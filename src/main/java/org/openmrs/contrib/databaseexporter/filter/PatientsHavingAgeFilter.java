@@ -42,7 +42,7 @@ public class PatientsHavingAgeFilter extends PatientFilter {
 		List<Integer> ret = new ArrayList<Integer>();
 		for (AgeRange ar : getAgeRanges()) {
 			StringBuilder q = new StringBuilder();
-			q.append("select p.patient_id from patient p, person n ");
+			q.append("select distinct p.patient_id from patient p, person n ");
 			q.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id");
 			if (ar.getMinAge() != null) {
 				q.append(" and datediff(CURRENT_DATE, n.birthdate)/365.25 >= " + ar.getMinAge());

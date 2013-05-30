@@ -54,7 +54,9 @@ public class DatabaseExporter {
 			for (final String table : context.getTableData().keySet()) {
 				TableConfig tableConfig = context.getTableData().get(table);
 
-				DbUtil.writeTableSchema(table, context);
+				if (tableConfig.isExportSchema()) {
+					DbUtil.writeTableSchema(table, context);
+				}
 
 				if (tableConfig.isExportData()) {
 

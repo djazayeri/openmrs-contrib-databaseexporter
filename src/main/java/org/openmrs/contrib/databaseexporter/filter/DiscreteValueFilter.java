@@ -22,13 +22,13 @@ import java.util.List;
 /**
  * Row filter which returns those rows that match the passed values
  */
-public class ColumnValueFilter extends RowFilter {
+public class DiscreteValueFilter extends RowFilter {
 
 	private String tableName;
 	private String columnName;
 	private List<Object> values;
 
-	public ColumnValueFilter() {}
+	public DiscreteValueFilter() {}
 
 	@Override
 	public void applyFilters(ExportContext context) {
