@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * Interface for a transform that can manipulate a row in one or more tables
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public class SimpleReplacementTransform extends RowTransform {
 
 	private List<String> tableAndColumnList;
