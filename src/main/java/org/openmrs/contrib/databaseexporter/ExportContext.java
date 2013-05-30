@@ -15,11 +15,9 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,9 +37,6 @@ public class ExportContext {
 		this.connection = connection;
 		this.writer = writer;
 		tableData = configuration.getTableFilter().getTablesForExport(this);
-		for (RowFilter filter : configuration.getRowFilters()) {
-			filter.filter(this);
-		}
 	}
 
 	//***** METHODS *****

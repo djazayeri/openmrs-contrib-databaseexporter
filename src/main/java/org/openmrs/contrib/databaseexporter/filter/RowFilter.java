@@ -15,6 +15,9 @@ package org.openmrs.contrib.databaseexporter.filter;
 
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.TableConfig;
+
+import java.util.List;
 
 /**
  * Interface for a filter that can configure one or more filters
@@ -22,6 +25,28 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class RowFilter  {
 
-	public abstract void filter(ExportContext context);
+	private boolean exclusionFilter = false;
 
+	public abstract void applyFilters(ExportContext context);
+
+	protected final void applyConstraints(String tableName, String columnName, List<Object> values, ExportContext context) {
+		TableConfig config = context.getTableData().get(tableName);
+		if (exclusionFilter) {
+			List<Object> existing = config.getColumnConstraints().get(columnName);
+			if (existing != null) {
+				existing.removeAll(values);
+			}
+		}
+		else {
+			config.addColumnConstraints(columnName, values);
+		}
+	}
+
+	public boolean isExclusionFilter() {
+		return exclusionFilter;
+	}
+
+	public void setExclusionFilter(boolean exclusionFilter) {
+		this.exclusionFilter = exclusionFilter;
+	}
 }

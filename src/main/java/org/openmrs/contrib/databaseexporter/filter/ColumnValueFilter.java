@@ -31,9 +31,8 @@ public class ColumnValueFilter extends RowFilter {
 	public ColumnValueFilter() {}
 
 	@Override
-	public void filter(ExportContext context) {
-		TableConfig config = context.getTableData().get(tableName);
-		config.addColumnConstraints(columnName, values);
+	public void applyFilters(ExportContext context) {
+		applyConstraints(tableName, columnName, values, context);
 	}
 
 	public String getTableName() {

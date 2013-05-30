@@ -15,6 +15,7 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.IOUtils;
+import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -43,6 +44,10 @@ public class DatabaseExporter {
 			PrintWriter out = new PrintWriter(osWriter);
 
 			ExportContext context = new ExportContext(configuration, connection, out);
+
+			for (RowFilter filter : configuration.getRowFilters()) {
+				filter.applyFilters(context);
+			}
 
 			DbUtil.writeExportHeader(context);
 

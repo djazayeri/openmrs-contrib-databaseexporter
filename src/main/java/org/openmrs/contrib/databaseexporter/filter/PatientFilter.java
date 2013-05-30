@@ -58,7 +58,7 @@ public abstract class PatientFilter extends RowFilter {
 	}
 
 	@Override
-	public void filter(ExportContext context) {
+	public void applyFilters(ExportContext context) {
 		Collection<Integer> patientIds = getPatientIds(context);
 		if (patientIds != null && !patientIds.isEmpty()) {
 			Collection<Integer> personIds = getPersonIds(context);
@@ -74,7 +74,7 @@ public abstract class PatientFilter extends RowFilter {
 					sb.append(" where ").append(clause);
 				}
 				List<Object> l = context.executeQuery(sb.toString(), new ColumnListHandler<Object>());
-				context.getTableData().get(fq.getTableName()).addColumnConstraints(fq.getColumnToQuery(), l);
+				applyConstraints(fq.getTableName(), fq.getColumnToQuery(), l, context);
 			}
 		}
 	}
