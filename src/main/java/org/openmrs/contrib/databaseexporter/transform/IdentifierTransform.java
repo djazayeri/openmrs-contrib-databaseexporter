@@ -42,7 +42,7 @@ public class IdentifierTransform extends RowTransform {
 	 * and test the identifier validators and use them with idgen.  For now, we will leave it
 	 * like this because it accomplishes the first most important task, which is de-identification
 	 */
-	public void applyTransform(TableRow row, ExportContext context) {
+	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("patient_identifier_type")) {
 			row.setRawValue("check_digit", 0);
 			row.setRawValue("validator", null);
@@ -52,6 +52,7 @@ public class IdentifierTransform extends RowTransform {
 		if (row.getTableName().equals("patient_identifier")) {
 			row.setRawValue("identifier", row.getRawValue("patient_identifier_id"));
 		}
+		return true;
 	}
 
 	//***** PROPERTY ACCESS *****

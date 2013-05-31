@@ -96,10 +96,13 @@ public class DatabaseExporter {
 									ColumnValue value = new ColumnValue(table, columnName, md.getColumnType(i), rs.getObject(i));
 									row.addColumnValue(columnName, value);
 								}
+								boolean includeRow = true;
 								for (RowTransform transform : configuration.getRowTransforms()) {
-									transform.applyTransform(row, context);
+									includeRow = includeRow && transform.applyTransform(row, context);
 								}
-								results.add(row);
+								if (includeRow) {
+									results.add(row);
+								}
 							}
 							return results;
 						}

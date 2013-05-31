@@ -13,25 +13,22 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.TableConfig;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Interface for a transform that can manipulate a row in one or more tables
+ * De-identifies the user table and optionally replaces references to users
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class RowTransform {
+public class UserTransform extends RowTransform {
 
-	/**
-	 * Provides a mechanism for transforming the contents of a table row before writing it
-	 * Also provides an additional mechanism for excluding a row.  If a transform returns false,
-	 * this indicates to the export framework that the row should be excluded altogether
-	 */
-	public abstract boolean applyTransform(TableRow row, ExportContext context);
+	//***** CONSTRUCTORS *****
 
+	public UserTransform() {}
+
+	//***** INSTANCE METHODS *****
+
+	public boolean applyTransform(TableRow row, ExportContext context) {
+		// TODO: Implement this
+		return true;
+	}
 }

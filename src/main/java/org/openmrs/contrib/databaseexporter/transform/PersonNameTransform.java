@@ -50,7 +50,7 @@ public class PersonNameTransform extends RowTransform {
 
 	//***** INSTANCE METHODS *****
 
-	public void applyTransform(TableRow row, ExportContext context) {
+	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_name")) {
 
 			String givenNameStart = (String)row.getRawValue("given_name");
@@ -69,6 +69,7 @@ public class PersonNameTransform extends RowTransform {
 			row.setRawValue("family_name_suffix", null);
 			row.setRawValue("degree", null);
 		}
+		return true;
 	}
 
 	/**

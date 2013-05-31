@@ -29,7 +29,7 @@ public class SimpleReplacementTransform extends RowTransform {
 	private List<String> tableAndColumnList;
 	private Object replacement;
 
-	public void applyTransform(TableRow row, ExportContext context) {
+	public boolean applyTransform(TableRow row, ExportContext context) {
 		for (String column : row.getColumns()) {
 			if (tableAndColumnList.contains(row.getTableName() + "." + column)) {
 				if (row.getRawValue(column) != null) {
@@ -45,6 +45,7 @@ public class SimpleReplacementTransform extends RowTransform {
 				}
 			}
 		}
+		return true;
 	}
 
 	public List<String> getTableAndColumnList() {

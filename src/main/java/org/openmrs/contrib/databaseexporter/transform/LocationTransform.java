@@ -13,25 +13,25 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.TableConfig;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Interface for a transform that can manipulate a row in one or more tables
+ * This transform supports two different configurable options
+ * * De-identifying location names and descriptions
+ * * Scrambling the locations associated with data such as obs, encounter, patient_program, and person_attribute
+ *   in a way that these are consistent for each patient
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class RowTransform {
+public class LocationTransform extends RowTransform {
 
-	/**
-	 * Provides a mechanism for transforming the contents of a table row before writing it
-	 * Also provides an additional mechanism for excluding a row.  If a transform returns false,
-	 * this indicates to the export framework that the row should be excluded altogether
-	 */
-	public abstract boolean applyTransform(TableRow row, ExportContext context);
+	//***** CONSTRUCTORS *****
 
+	public LocationTransform() {}
+
+	//***** INSTANCE METHODS *****
+
+	public boolean applyTransform(TableRow row, ExportContext context) {
+		// TODO: Implement this
+		return true;
+	}
 }
