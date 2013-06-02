@@ -15,11 +15,16 @@ package org.openmrs.contrib.databaseexporter.transform;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 /**
- * De-identifies the user table and optionally replaces references to users
+ * De-identifies the user table
  */
 public class UserTransform extends RowTransform {
+
+	private String systemIdReplacement;
+	private String usernameReplacement;
+	private String passwordReplacement;
 
 	//***** CONSTRUCTORS *****
 
@@ -28,7 +33,47 @@ public class UserTransform extends RowTransform {
 	//***** INSTANCE METHODS *****
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
-		// TODO: Implement this
+		if (row.getTableName().equals("users")) {
+			if (systemIdReplacement != null) {
+				row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
+			}
+			if (usernameReplacement != null) {
+				row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
+			}
+			if (passwordReplacement != null) {
+				String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
+				row.setRawValue("password", Util.encodeString(pwAndSalt));
+			}
+			row.setRawValue("secret_question", null);
+			row.setRawValue("secret_answer", null);
+		}
+		if (row.getTableName().equals("user_property")) {
+			return false;
+		}
 		return true;
+	}
+
+	public String getSystemIdReplacement() {
+		return systemIdReplacement;
+	}
+
+	public void setSystemIdReplacement(String systemIdReplacement) {
+		this.systemIdReplacement = systemIdReplacement;
+	}
+
+	public String getUsernameReplacement() {
+		return usernameReplacement;
+	}
+
+	public void setUsernameReplacement(String usernameReplacement) {
+		this.usernameReplacement = usernameReplacement;
+	}
+
+	public String getPasswordReplacement() {
+		return passwordReplacement;
+	}
+
+	public void setPasswordReplacement(String passwordReplacement) {
+		this.passwordReplacement = passwordReplacement;
 	}
 }

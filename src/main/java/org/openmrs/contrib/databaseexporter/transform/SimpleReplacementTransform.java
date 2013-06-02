@@ -13,7 +13,6 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
@@ -33,15 +32,7 @@ public class SimpleReplacementTransform extends RowTransform {
 		for (String column : row.getColumns()) {
 			if (tableAndColumnList.contains(row.getTableName() + "." + column)) {
 				if (row.getRawValue(column) != null) {
-					Object newVal = replacement;
-					if (newVal instanceof String && newVal.toString().contains("${")) {
-						String s = (String)newVal;
-						for (String c : row.getColumns()) {
-							s = s.replace("${"+c+"}", Util.nvlStr(row.getRawValue(c), ""));
-						}
-						newVal = s;
-					}
-					row.setRawValue(column, newVal);
+					row.setRawValue(column, Util.evaluateExpression(replacement, row));
 				}
 			}
 		}

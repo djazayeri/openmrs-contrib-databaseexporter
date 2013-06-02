@@ -15,13 +15,18 @@ package org.openmrs.contrib.databaseexporter.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.openmrs.contrib.databaseexporter.TableRow;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class Util {
 
@@ -82,6 +87,44 @@ public class Util {
 		String s = loadResource(path);
 		for (String line : s.split(System.getProperty("line.separator"))) {
 			ret.add(line);
+		}
+		return ret;
+	}
+
+	public static String encodeString(String strToEncode) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			byte[] input = strToEncode.getBytes("UTF-8");
+			return hexString(md.digest(input));
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Unable to encode string " + strToEncode, e);
+		}
+	}
+
+	public static String hexString(byte[] block) {
+		StringBuffer buf = new StringBuffer();
+		char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+		int len = block.length;
+		int high = 0;
+		int low = 0;
+		for (int i = 0; i < len; i++) {
+			high = ((block[i] & 0xf0) >> 4);
+			low = (block[i] & 0x0f);
+			buf.append(hexChars[high]);
+			buf.append(hexChars[low]);
+		}
+		return buf.toString();
+	}
+
+	public static Object evaluateExpression(Object expression, TableRow row) {
+		Object ret = expression;
+		if (ret != null && ret instanceof String && ret.toString().contains("${")) {
+			String s = (String)ret;
+			for (String c : row.getColumns()) {
+				s = s.replace("${"+c+"}", Util.nvlStr(row.getRawValue(c), ""));
+			}
+			ret = s;
 		}
 		return ret;
 	}
