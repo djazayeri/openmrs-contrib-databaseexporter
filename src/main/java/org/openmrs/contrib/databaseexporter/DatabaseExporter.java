@@ -17,6 +17,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
+import org.openmrs.contrib.databaseexporter.transform.TableTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
 import java.io.FileOutputStream;
@@ -107,6 +108,14 @@ public class DatabaseExporter {
 							return results;
 						}
 					});
+
+					// Now that we have retrieved and transformed existing values, apply any whole-table transforms
+					for (RowTransform transform : configuration.getRowTransforms()) {
+						if (transform instanceof TableTransform) {
+							TableTransform tableTransform = (TableTransform)transform;
+							rows.addAll(tableTransform.getNewRows(table, context));
+						}
+					}
 
 					System.out.println("Number retrieved: " + rows.size());
 

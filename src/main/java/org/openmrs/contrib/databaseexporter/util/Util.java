@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,14 @@ public class Util {
 
 	public static String toString(Object[] c) {
 		return toString(Arrays.asList(c));
+	}
+
+	public static List<String> toList(String s, String separator) {
+		List<String> ret = new ArrayList<String>();
+		for (String element : s.split(separator)) {
+			ret.add(element);
+		}
+		return ret;
 	}
 
 	public static boolean isEmpty(Object o) {
@@ -91,6 +100,26 @@ public class Util {
 		return ret;
 	}
 
+	public static List<Map<String, String>> getListOfMapsFromResource(String path, String elementSeparator) {
+		List<Map<String, String>> ret = new ArrayList<Map<String, String>>();
+		String s = loadResource(path).trim();
+		List<String> headers = null;
+		for (String line : s.split(System.getProperty("line.separator"))) {
+			if (headers == null) {
+				headers = toList(line, elementSeparator);
+			}
+			else {
+				Map<String, String> row = new LinkedHashMap<String, String>();
+				List<String> elements = toList(line, elementSeparator);
+				for (int i=0; i<headers.size(); i++) {
+					row.put(headers.get(i), elements.get(i));
+				}
+				ret.add(row);
+			}
+		}
+		return ret;
+	}
+
 	public static String encodeString(String strToEncode) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -130,7 +159,7 @@ public class Util {
 	}
 
 	public static <T> T getRandomElementFromList(List<T> l) {
-		return l.get((int)(Math.random() * l.size()));
+		return l.get((int) (Math.random() * l.size()));
 	}
 }
 

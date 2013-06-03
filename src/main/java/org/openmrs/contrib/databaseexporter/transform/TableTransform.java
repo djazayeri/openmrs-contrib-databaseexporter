@@ -13,33 +13,20 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
-import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * This replaces all addresses in the person_address and location tables based on a custom input file.
+ * Represents a particular type of transform that can add new rows to the table, rather than altering existing rows
  */
-public class AddressTransform extends StructuredAddressTransform {
+public interface TableTransform {
 
-	//***** CONSTRUCTORS *****
-
-	public AddressTransform() {}
-
-	//***** INSTANCE METHODS *****
-
-	public boolean applyTransform(TableRow row, ExportContext context) {
-		if (row.getTableName().equals("person_address") || row.getTableName().equals("location")) {
-			Map<String, String> newAddress = getRandomReplacementAddress(row, context);
-			for (String column : addressColumns) {
-				if (row.getRawValue(column) != null) {
-					row.setRawValue(column, newAddress.get(column));
-				}
-			}
-		}
-		return true;
-	}
+	/**
+	 * @return the alternative table contents that this should output for this table
+	 */
+	public List<TableRow> getNewRows(String tableName, ExportContext context);
 }
