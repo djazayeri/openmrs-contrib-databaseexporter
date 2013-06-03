@@ -128,5 +128,9 @@ public class Util {
 		}
 		return ret;
 	}
+
+	public static <T> T getRandomElementFromList(List<T> l) {
+		return l.get((int)(Math.random() * l.size()));
+	}
 }
 

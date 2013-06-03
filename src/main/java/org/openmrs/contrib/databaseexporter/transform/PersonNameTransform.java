@@ -84,8 +84,7 @@ public class PersonNameTransform extends RowTransform {
 			return startingValue;
 		}
 		if (!isReproducible()) {
-			int randomNum = (int)(Math.random() * replacementList.size());
-			return replacementList.get(randomNum);
+			return Util.getRandomElementFromList(replacementList);
 		}
 		int remainder = (Math.abs(startingValue.hashCode()) % replacementList.size());
 		return replacementList.get(remainder);

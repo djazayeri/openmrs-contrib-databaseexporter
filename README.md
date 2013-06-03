@@ -110,3 +110,17 @@ openmrs-contrib-databaseexporter
 				"replacement": "Value replaced during de-identification ${obs_id}"
 			}
 		]
+
+				{
+        			"usersToKeep": [1,24839,12],
+        			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+        			"systemIdReplacement": "${user_id}",
+        			"usernameReplacement": "user${user_id}",
+        			"passwordReplacement": "Test1234"
+        		}
+
+        				{
+                			"@class": "org.openmrs.contrib.databaseexporter.transform.ScrambleStatesInWorkflowTransform",
+                			"workflowToScramble": 9,
+                			"possibleStates": [247,248,249]
+                		}
