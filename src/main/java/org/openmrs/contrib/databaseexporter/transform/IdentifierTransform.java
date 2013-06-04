@@ -30,6 +30,8 @@ import java.util.Map;
  */
 public class IdentifierTransform extends RowTransform {
 
+	private String identifierReplacement = "${patient_identifier_id}";
+
 	//***** CONSTRUCTORS *****
 
 	public IdentifierTransform() {}
@@ -50,12 +52,18 @@ public class IdentifierTransform extends RowTransform {
 			row.setRawValue("format_description", null);
 		}
 		if (row.getTableName().equals("patient_identifier")) {
-			row.setRawValue("identifier", row.getRawValue("patient_identifier_id"));
+			row.setRawValue("identifier", Util.evaluateExpression(getIdentifierReplacement(), row));
 		}
 		return true;
 	}
 
 	//***** PROPERTY ACCESS *****
 
+	public String getIdentifierReplacement() {
+		return identifierReplacement;
+	}
 
+	public void setIdentifierReplacement(String identifierReplacement) {
+		this.identifierReplacement = identifierReplacement;
+	}
 }

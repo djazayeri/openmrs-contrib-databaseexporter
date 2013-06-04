@@ -18,6 +18,7 @@ import org.openmrs.contrib.databaseexporter.TableRow;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Map;
  */
 public class RwandaAddressHierarchyTransform extends StructuredAddressTransform implements TableTransform {
 
-	private List<String> hierarchyLevels;
+	private List<String> hierarchyLevels = Arrays.asList("country","state_province","county_district","city_village","address3","address1");
 
 	//***** CONSTRUCTORS *****
 

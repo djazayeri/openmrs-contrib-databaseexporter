@@ -27,6 +27,7 @@ public class PatientsHavingVitalStatusFilter extends PatientFilter {
 
 	//***** PROPERTIES *****
 
+	private Integer numberAlive = 10; // Default to 10
 	private Integer numberDead = 10; // Default to 10
 
 	//***** CONSTRUCTORS *****
@@ -39,17 +40,33 @@ public class PatientsHavingVitalStatusFilter extends PatientFilter {
 	public Collection<Integer> getPatientIds(ExportContext context) {
 		List<Integer> ret = new ArrayList<Integer>();
 
-		StringBuilder q = new StringBuilder();
-		q.append("select p.patient_id from patient p, person n ");
-		q.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id ");
-		q.append("and	 n.dead = 1 ");
-		q.append("order by rand() limit " + numberDead);
-		ret.addAll(context.executeQuery(q.toString(), new ColumnListHandler<Integer>()));
+		StringBuilder aliveQuery = new StringBuilder();
+		aliveQuery.append("select p.patient_id from patient p, person n ");
+		aliveQuery.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id ");
+		aliveQuery.append("and	 n.dead = 0 ");
+		aliveQuery.append("order by rand() limit " + numberAlive);
+		ret.addAll(context.executeQuery(aliveQuery.toString(), new ColumnListHandler<Integer>()));
+
+		StringBuilder deadQuery = new StringBuilder();
+		deadQuery.append("select p.patient_id from patient p, person n ");
+		deadQuery.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id ");
+		deadQuery.append("and	 n.dead = 1 ");
+		deadQuery.append("order by rand() limit " + numberDead);
+		ret.addAll(context.executeQuery(deadQuery.toString(), new ColumnListHandler<Integer>()));
 
 		return ret;
 	}
 
 	//****** PROPERTY ACCESS *****
+
+
+	public Integer getNumberAlive() {
+		return numberAlive;
+	}
+
+	public void setNumberAlive(Integer numberAlive) {
+		this.numberAlive = numberAlive;
+	}
 
 	public Integer getNumberDead() {
 		return numberDead;
