@@ -114,3 +114,23 @@ Example:  Include only certain properties from the user_property table
 }
 ```
 
+**PatternValueFilter**
+
+Limits the rows in a particular table based on whether or not a column value matches one or more specified patterns.
+
+Options:
+* **tableName** (required):  The table to filter
+* **columnName** (required): The column for which you want to apply the constraint
+* **patterns** (required):  A list of patterns that the column must match to be included.  This supports the database "like" syntax (%).
+* **exclusionFilter** (optional, defaults to false):  See above
+
+Example:  Exclude global properties for certain modules that are no longer in use
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatternValueFilter",
+	"tableName": "global_property",
+	"columnName": "property",
+	"values": ["htmlformentry%","sync%"],
+	"exclusionFilter": true
+}
+```

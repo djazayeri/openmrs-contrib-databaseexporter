@@ -27,7 +27,6 @@ public class PatternValueFilter extends RowFilter {
 
 	private String tableName;
 	private String columnName;
-	private String constraints;
 	private List<String> patterns; // This is not a regular expression, but is in the format supported by the "like" function in mysql
 
 	public PatternValueFilter() {}
