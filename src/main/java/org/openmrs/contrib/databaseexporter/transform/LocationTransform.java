@@ -13,16 +13,40 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.openmrs.contrib.databaseexporter.ColumnValue;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
+import org.openmrs.contrib.databaseexporter.util.DbUtil;
+import org.openmrs.contrib.databaseexporter.util.Util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * This transform supports two different configurable options
- * * De-identifying location names and descriptions
- * * Scrambling the locations associated with data such as obs, encounter, patient_program, and person_attribute
+ * This transform:
+ *  # Replaces any address data in the location table based on the configured address configuration file
+ *  # Changes the name and description of the location table
+ *  # Optionally scrambles the locations associated with data such as obs, encounter, patient_program, and person_attribute
  *   in a way that these are consistent for each patient
  */
-public class LocationTransform extends RowTransform {
+public class LocationTransform extends StructuredAddressTransform {
+
+	private Set<String> usedNames = new HashSet<String>();
+	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
+	private List<Integer> replacementLocations = new ArrayList<Integer>();
+	private List<String> locationForeignKeys;
+
+	//***** PROPERTIES *****
+
+	private String nameReplacement = "${address1} Health Center";
+	private String descriptionReplacement = "A de-identified health center located at ${address1}";
+	private boolean scrambleLocationsInData = true;
+	private List<Integer> keepOnlyLocations;
 
 	//***** CONSTRUCTORS *****
 
@@ -31,7 +55,100 @@ public class LocationTransform extends RowTransform {
 	//***** INSTANCE METHODS *****
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
-		// TODO: Implement this
+		if (row.getTableName().equals("location")) {
+
+			// Do not include locations if a restricted list is specified, and the location is not the Unknown Location
+			if (!"Unknown Location".equals(row.getRawValue("name"))) {
+				Integer lId = Integer.valueOf(row.getRawValue("location_id").toString());
+				if (!getKeepOnlyLocations().isEmpty() && !getKeepOnlyLocations().contains(lId)) {
+					return false;
+				}
+			}
+
+			// If we are keeping a location, give it a de-identified address, name, and description
+			Map<String, String> newAddress = getRandomReplacementAddress(row, context);
+			for (String column : addressColumns) {
+				if (row.getRawValue(column) != null) {
+					row.setRawValue(column, newAddress.get(column));
+				}
+			}
+			String name = Util.evaluateExpression(nameReplacement, row).toString();
+			if (usedNames.contains(name)) {
+				int i = 1;
+				while (usedNames.contains(name + " " + i)) {
+					i++;
+				}
+				name = name + " " + i;
+			}
+			row.setRawValue("name", name);
+			row.setRawValue("description", Util.evaluateExpression(descriptionReplacement, row));
+			usedNames.add(name);
+		}
+
+		// If we have indicated to scramble locations, or if we are limiting to specific locations, then do this
+		if (scrambleLocationsInData || !getKeepOnlyLocations().isEmpty()) {
+			replacementLocations.addAll(getKeepOnlyLocations());
+			if (replacementLocations.isEmpty()) {
+				replacementLocations.addAll(context.executeQuery("select location_id from location", new ColumnListHandler<Integer>()));
+			}
+
+			if (locationForeignKeys == null) {
+				locationForeignKeys = DbUtil.getForeignKeyMap(context).get("location.location_id");
+			}
+			for (String tableAndColumn : locationForeignKeys) {
+				String[] split = tableAndColumn.split("\\.");
+				if (row.getTableName().equals(split[0])) {
+					ColumnValue pIdColVal = row.getColumnValueMap().get("patient_id");
+					if (pIdColVal == null) {
+						pIdColVal = row.getColumnValueMap().get("person_id");
+					}
+					String pId = (pIdColVal == null ? "" : pIdColVal.getValue().toString());
+					String cacheKey = pId + ":" + row.getRawValue(split[1]);
+					Integer value = patientLocationCache.get(cacheKey);
+					if (value == null) {
+						value = Util.getRandomElementFromList(replacementLocations);
+						patientLocationCache.put(cacheKey, value);
+					}
+					row.setRawValue(split[1], value);
+				}
+			}
+		}
+
 		return true;
+	}
+
+	public String getNameReplacement() {
+		return nameReplacement;
+	}
+
+	public void setNameReplacement(String nameReplacement) {
+		this.nameReplacement = nameReplacement;
+	}
+
+	public String getDescriptionReplacement() {
+		return descriptionReplacement;
+	}
+
+	public void setDescriptionReplacement(String descriptionReplacement) {
+		this.descriptionReplacement = descriptionReplacement;
+	}
+
+	public boolean isScrambleLocationsInData() {
+		return scrambleLocationsInData;
+	}
+
+	public void setScrambleLocationsInData(boolean scrambleLocationsInData) {
+		this.scrambleLocationsInData = scrambleLocationsInData;
+	}
+
+	public List<Integer> getKeepOnlyLocations() {
+		if (keepOnlyLocations == null) {
+			keepOnlyLocations = new ArrayList<Integer>();
+		}
+		return keepOnlyLocations;
+	}
+
+	public void setKeepOnlyLocations(List<Integer> keepOnlyLocations) {
+		this.keepOnlyLocations = keepOnlyLocations;
 	}
 }

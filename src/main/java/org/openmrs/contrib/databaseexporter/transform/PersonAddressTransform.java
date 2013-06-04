@@ -21,18 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This replaces all addresses in the person_address and location tables based on a custom input file.
+ * This replaces all addresses in the person_address table based on a custom input file.
  */
-public class AddressTransform extends StructuredAddressTransform {
+public class PersonAddressTransform extends StructuredAddressTransform {
 
 	//***** CONSTRUCTORS *****
 
-	public AddressTransform() {}
+	public PersonAddressTransform() {}
 
 	//***** INSTANCE METHODS *****
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
-		if (row.getTableName().equals("person_address") || row.getTableName().equals("location")) {
+		if (row.getTableName().equals("person_address")) {
 			Map<String, String> newAddress = getRandomReplacementAddress(row, context);
 			for (String column : addressColumns) {
 				if (row.getRawValue(column) != null) {

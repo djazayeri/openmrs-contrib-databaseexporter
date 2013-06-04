@@ -55,6 +55,19 @@ public class Util {
 		return o == null || o.equals("");
 	}
 
+	public static boolean notEmpty(Object o) {
+		return !isEmpty(o);
+	}
+
+	public static <T> T firstNotNull(T... values) {
+		for (T val : values) {
+			if (notEmpty(val)) {
+				return val;
+			}
+		}
+		return null;
+	}
+
 	public static String nvlStr(Object o, String valueIfNull) {
 		if (isEmpty(o)) {
 			return valueIfNull;
