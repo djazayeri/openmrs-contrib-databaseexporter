@@ -18,19 +18,20 @@ such as text observations, and scrambling of data such as what patient data is a
 Although de-identification is the most common use case here, it is not the only one.  Transforms may be used to set
 up additional user accounts for training, to reset passwords, to configure global properties, etc.
 
-==Usage==
+Usage
+------
 
-# Build this project by cloning this repository, navigating to the root directory, and running "mvn clean package".
-This will produce an executable jar in the "target" directory: "databaseexporter-<version>-jar-with-dependencies.jar".
+* Build this project by cloning this repository, navigating to the root directory, and running "mvn clean package".
+This will produce an executable jar in the "target" directory: "databaseexporter-XYZ-jar-with-dependencies.jar".
 
-# Create a configuration file that specifies the parameters of the export.  See configuration section for details.
+* Create a configuration file that specifies the parameters of the export.  See configuration section for details.
 
-# Navigate into the directory that contains executable jar produced above and run the command:
-  *java -jar databaseexporter-<version>-jar-with-dependencies.jar /path/to/configuration/file/created/above*
+* Navigate into the directory that contains executable jar produced above and run the command:
 
-==Configuration==
+	$ java -jar databaseexporter-XYZ-jar-with-dependencies.jar /path/to/configuration/file/created/above
 
-
+Configuration
+--------------
 
 TBD
 
