@@ -15,27 +15,19 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<liquibase.version>2</liquibase.version>
-		<openmrs.version>1.9.0</openmrs.version>
-		<properties.file></properties.file>
-		<db.driver></db.driver>
-		<db.url>jdbc:mysql://localhost:3306/liquibaserunner?autoReconnect=true</db.url>
-		<db.user>rooot</db.user>
-		<db.password></db.password>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.8</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-mxj</artifactId>
+			<version>5.0.12</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

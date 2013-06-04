@@ -42,11 +42,6 @@ public class DbUtil {
 		}
 	}
 
-	public static List<String> getColumns(String table, ExportContext context) {
-		String query = ""; // TODO: Figure out the right query here
-		return context.executeQuery(query, new ColumnListHandler<String>());
-	}
-
 	public static ListMap<String, String> getForeignKeyMap(ExportContext context) {
 		StringBuilder query = new StringBuilder();
 		query.append("select	referenced_table_name, referenced_column_name, table_name, column_name ");

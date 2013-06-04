@@ -17,7 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.lang.Exception;import java.util.Properties;
+import java.lang.Exception;
 
 public class DatabaseExporterTest {
 
