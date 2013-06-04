@@ -36,10 +36,12 @@ import java.util.Set;
  */
 public class LocationTransform extends StructuredAddressTransform {
 
+	//***** INTERNAL USE VARIABLES ****
 	private Set<String> usedNames = new HashSet<String>();
 	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
-	private List<Integer> replacementLocations = new ArrayList<Integer>();
+	private List<Integer> replacementLocations;
 	private List<String> locationForeignKeys;
+	private List<Integer> locationAttributeTypes;
 
 	//***** PROPERTIES *****
 
@@ -87,15 +89,7 @@ public class LocationTransform extends StructuredAddressTransform {
 
 		// If we have indicated to scramble locations, or if we are limiting to specific locations, then do this
 		if (scrambleLocationsInData || !getKeepOnlyLocations().isEmpty()) {
-			replacementLocations.addAll(getKeepOnlyLocations());
-			if (replacementLocations.isEmpty()) {
-				replacementLocations.addAll(context.executeQuery("select location_id from location", new ColumnListHandler<Integer>()));
-			}
-
-			if (locationForeignKeys == null) {
-				locationForeignKeys = DbUtil.getForeignKeyMap(context).get("location.location_id");
-			}
-			for (String tableAndColumn : locationForeignKeys) {
+			for (String tableAndColumn : getLocationForeignKeys(context)) {
 				String[] split = tableAndColumn.split("\\.");
 				if (row.getTableName().equals(split[0])) {
 					ColumnValue pIdColVal = row.getColumnValueMap().get("patient_id");
@@ -106,15 +100,52 @@ public class LocationTransform extends StructuredAddressTransform {
 					String cacheKey = pId + ":" + row.getRawValue(split[1]);
 					Integer value = patientLocationCache.get(cacheKey);
 					if (value == null) {
-						value = Util.getRandomElementFromList(replacementLocations);
+						value = Util.getRandomElementFromList(getReplacementLocations(context));
 						patientLocationCache.put(cacheKey, value);
 					}
-					row.setRawValue(split[1], value);
+					if (split[0].equals("person_attribute")) {
+						if (getLocationAttributeTypes(context).contains(row.getRawValue("person_attribute_type_id"))) {
+							row.setRawValue(split[1], value);
+						}
+					}
+					else {
+						row.setRawValue(split[1], value);
+					}
 				}
 			}
 		}
 
 		return true;
+	}
+
+	private List<Integer> getReplacementLocations(ExportContext context) {
+		if (replacementLocations == null) {
+			replacementLocations = new ArrayList<Integer>();
+			replacementLocations.addAll(getKeepOnlyLocations());
+			if (replacementLocations.isEmpty()) {
+				replacementLocations.addAll(context.executeQuery("select location_id from location", new ColumnListHandler<Integer>()));
+			}
+		}
+		return replacementLocations;
+	}
+
+	public List<String> getLocationForeignKeys(ExportContext context) {
+		if (locationForeignKeys == null) {
+			locationForeignKeys = DbUtil.getForeignKeyMap(context).get("location.location_id");
+			locationForeignKeys.add("person_attribute.value");
+		}
+		return locationForeignKeys;
+	}
+
+	public List<Integer> getLocationAttributeTypes(ExportContext context) {
+		if (locationAttributeTypes == null) {
+			StringBuilder q = new StringBuilder();
+			q.append("select person_attribute_type_id ");
+			q.append("from   person_attribute_type ");
+			q.append("where  format = 'org.openmrs.Location'");
+			locationAttributeTypes = context.executeQuery(q.toString(), new ColumnListHandler<Integer>());
+		}
+		return locationAttributeTypes;
 	}
 
 	public String getNameReplacement() {
