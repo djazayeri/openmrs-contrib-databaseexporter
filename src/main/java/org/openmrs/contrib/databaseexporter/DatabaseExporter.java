@@ -14,13 +14,16 @@
 package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.transform.TableTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -34,6 +37,32 @@ import java.util.List;
 public class DatabaseExporter {
 
 	public DatabaseExporter() { }
+
+	public static void main(String[] args) {
+		// For now, we simply support the specification of a file path on the command line for the configuration file
+		if (args.length == 0) {
+			System.out.println("You must specify a single argument, which is the path to the configuration file.");
+			return;
+		}
+		File f = new File(args[0]);
+		if (!f.exists()) {
+			System.out.println("The configuration file path specified is not valid.");
+			return;
+		}
+		try {
+			String json = FileUtils.readFileToString(f);
+			Configuration config = Configuration.loadFromJson(json);
+			export(config);
+		}
+		catch (IOException ioe) {
+			System.out.println("There was an error reading configuration file");
+			ioe.printStackTrace();
+		}
+		catch (Exception e) {
+			System.out.println("There is an error in your configuration syntax");
+			e.printStackTrace();
+		}
+	}
 
 	public static void export(final Configuration configuration) throws Exception {
 

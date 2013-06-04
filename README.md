@@ -1,6 +1,40 @@
 openmrs-contrib-databaseexporter
 ================================
 
+This tool aims to provide a similar capability to mysqldump, but with OpenMRS-aware configuration settings aiming to
+extract a database out of a production environment for development, testing, or demonstration.
+To accomplish this, it has two primary features:
+
+* Export a subset of the database.  As production databases grow in size, the approach of running mysqldump and then
+sourcing this into your development environment becomes very inefficient.  For databases containing hundreds of
+thousands of patients, and millions of obs, such a process can take hours (or days) to perform.  This tool aims to
+allow for exporting a subset of this data, ensuring that broad representation is accounted for across age ranges,
+program enrollments, encounters, relationships, etc, but which can be sourced in a matter of minutes.
+
+* Transform aspects of the database during the export process.  Most commonly, this involves de-identification of data.
+Depending on the type of environment being developed, this de-identification can be more or less comprehensive.
+Options include replacement of data such as person names and addresses, obfuscation of free-text data
+such as text observations, and scrambling of data such as what patient data is associated with what locations.
+Although de-identification is the most common use case here, it is not the only one.  Transforms may be used to set
+up additional user accounts for training, to reset passwords, to configure global properties, etc.
+
+==Usage==
+
+# Build this project by cloning this repository, navigating to the root directory, and running "mvn clean package".
+This will produce an executable jar in the "target" directory: "databaseexporter-<version>-jar-with-dependencies.jar".
+
+# Create a configuration file that specifies the parameters of the export.  See configuration section for details.
+
+# Navigate into the directory that contains executable jar produced above and run the command:
+  *java -jar databaseexporter-<version>-jar-with-dependencies.jar /path/to/configuration/file/created/above*
+
+==Configuration==
+
+
+
+TBD
+
+
 	{
 		"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingAgeFilter",
 		"numberPerAgeRange": 100,
