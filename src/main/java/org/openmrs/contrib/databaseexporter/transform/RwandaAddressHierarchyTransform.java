@@ -13,12 +13,12 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.openmrs.contrib.databaseexporter.ColumnValue;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +26,8 @@ import java.util.Map;
  * This replaces the address_hierarchy table with contents based on the configured addresses file
  */
 public class RwandaAddressHierarchyTransform extends StructuredAddressTransform implements TableTransform {
+
+	private List<String> hierarchyLevels;
 
 	//***** CONSTRUCTORS *****
 
@@ -44,23 +46,41 @@ public class RwandaAddressHierarchyTransform extends StructuredAddressTransform 
 	@Override
 	public List<TableRow> getNewRows(String tableName, ExportContext context) {
 		List<TableRow> rows = new ArrayList<TableRow>();
-
-		List<Map<String, String>> replacements = getReplacements();
-		for (int i=0; i<replacements.size(); i++) {
-			Map<String, String> replacement = replacements.get(i);
-			Integer num = i+1;
-			if (num == 1) {
-				TableRow row = new TableRow("address_hierarchy");
-				row.addColumnValue("address_hierarchy_id", new ColumnValue("address_hierarchy", "address_hierarchy_id", Types.INTEGER, num));
-				row.addColumnValue("name", new ColumnValue("address_hierarchy", "name", Types.VARCHAR, "Foo"));
-				row.addColumnValue("type_id", new ColumnValue("address_hierarchy", "type_id", Types.INTEGER, 1));
-				row.addColumnValue("parent_id", new ColumnValue("address_hierarchy", "parent_id", Types.INTEGER, null));
-				row.addColumnValue("user_generated_id", new ColumnValue("address_hierarchy", "user_generated_id", Types.VARCHAR, Integer.toString(num)));
-				rows.add(row);
+		int entryNum = 0;
+		Map<String, Integer> recordedEntries = new HashMap<String, Integer>();
+		for (int i=0; i<getReplacements().size(); i++) {
+			StringBuilder fullEntry = new StringBuilder();
+			Map<String, String> replacement = getReplacements().get(i);
+			for (int level=1; level<=getHierarchyLevels().size(); level++) {
+				Integer parentId = recordedEntries.get(fullEntry.toString());
+				String entryValue = replacement.get(getHierarchyLevels().get(level-1));
+				fullEntry.append("|"+entryValue);
+				if (!recordedEntries.containsKey(fullEntry.toString())) {
+					entryNum++;
+					recordedEntries.put(fullEntry.toString(), entryNum);
+					TableRow row = new TableRow("address_hierarchy");
+					row.addColumnValue("address_hierarchy_id", Types.INTEGER, entryNum);
+					row.addColumnValue("name", Types.VARCHAR, entryValue);
+					row.addColumnValue("type_id", Types.INTEGER, level);
+					row.addColumnValue("parent_id", Types.INTEGER, parentId);
+					row.addColumnValue("user_generated_id", Types.VARCHAR, Integer.toString(entryNum));
+					rows.add(row);
+				}
 			}
 		}
-
 		return rows;
+	}
 
+	//***** PROPERTY ACCESS *****
+
+	public List<String> getHierarchyLevels() {
+		if (hierarchyLevels == null) {
+			hierarchyLevels = new ArrayList<String>();
+		}
+		return hierarchyLevels;
+	}
+
+	public void setHierarchyLevels(List<String> hierarchyLevels) {
+		this.hierarchyLevels = hierarchyLevels;
 	}
 }

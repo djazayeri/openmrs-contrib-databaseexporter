@@ -64,4 +64,8 @@ public class TableRow {
 	public void addColumnValue(String columnName, ColumnValue columnValue) {
 		getColumnValueMap().put(columnName, columnValue);
 	}
+
+	public void addColumnValue(String columnName, int type, Object value) {
+		getColumnValueMap().put(columnName, new ColumnValue(tableName, columnName, type, value));
+	}
 }

@@ -124,3 +124,8 @@ openmrs-contrib-databaseexporter
                 			"workflowToScramble": 9,
                 			"possibleStates": [247,248,249]
                 		}
+
+                				{
+                        			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform",
+                        			"hierarchyLevels": ["country","state_province","county_district","city_village","address3","address1"]
+                        		}
