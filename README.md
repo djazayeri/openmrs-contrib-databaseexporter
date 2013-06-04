@@ -25,7 +25,7 @@ Configuration
 
 In order to run the databaseexporter, you must specify an appropriate configuration file.  This configuration file is expected to be in JSON format, and contains the following settings:
 
-#### sourceDatabaseCredentials ####
+##### sourceDatabaseCredentials #####
 
 This is where you specify the details of how the tool should connect to the source database from which you would like to export data.  The supported attributes are:
 
@@ -43,7 +43,7 @@ Example:
 	}
 ```
 
-#### targetLocation ####
+##### targetLocation #####
 
 This allows you to specify the location and name of the file that the tool produces.
 
@@ -52,7 +52,7 @@ Example:
 	"targetLocation": "/home/openmrs/openmrs_export.sql"
 ```
 
-#### tableFilter ####
+##### tableFilter #####
 
 This allows you to specify which tables are included and which are excluded from the export.  This allows you fine-grained control over which tables you wish to create and which you want to export data.  
 
@@ -75,7 +75,7 @@ Example:
 	}
 ```
 
-#### rowFilters ####
+##### rowFilters #####
 
 Whereas tableFilters (above) allow you to specify which tables you want to export data for altogether, Row Filters are what provide the capability to export only a subset of data across your database.  For example, if you wanted to export all of your metadata, but only the patient data for 3 specific patients, you can configure this with appropriate rowFilters.  Specifying a rowFilter follows the format:
 ```
@@ -94,23 +94,23 @@ The list of available filters, and their configuration options, is:
 
 ###### General Purpose Filters ######
 
-*DiscreteValueFilter*
+**DiscreteValueFilter**
 
-	Description: Limits the rows in a particular table based on whether or not a column value matches one or more specified values.
+Limits the rows in a particular table based on whether or not a column value matches one or more specified values.
 	
-	Options:
-		* tableName (required):  The table to filter
-		* columnName (required): The column for which you want to apply the constraint
-		* values (required):  A list of values that the column must match to be included
-		* exclusionFilter:  (optional, defaults to false)
+Options:
+* **tableName** (required):  The table to filter
+* **columnName** (required): The column for which you want to apply the constraint
+* **values** (required):  A list of values that the column must match to be included
+* **exclusionFilter** (optional, defaults to false):  See above
 
-	Example:  Include only certain properties from the user_property table
-	```
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.filter.DiscreteValueFilter",
-			"tableName": "user_property",
-			"columnName": "property",
-			"values": ["loginAttempts","emailAddress"]
-		}
-	```
+Example:  Include only certain properties from the user_property table
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.DiscreteValueFilter",
+	"tableName": "user_property",
+	"columnName": "property",
+	"values": ["loginAttempts","emailAddress"]
+}
+```
 
