@@ -20,6 +20,7 @@ import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.transform.TableTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -76,10 +77,12 @@ public class DatabaseExporter {
 			PrintWriter out = new PrintWriter(osWriter);
 
 			final ExportContext context = new ExportContext(configuration, connection, out);
+			context.log("Context initialized");
 
 			for (RowFilter filter : configuration.getRowFilters()) {
 				filter.applyFilters(context);
 			}
+			context.log(configuration.getRowFilters().size() + " Row filters completed");
 
 			DbUtil.writeExportHeader(context);
 
@@ -88,9 +91,11 @@ public class DatabaseExporter {
 
 				if (tableConfig.isExportSchema()) {
 					DbUtil.writeTableSchema(table, context);
+					context.log(table + " schema exported");
 				}
 
 				if (tableConfig.isExportData()) {
+					context.log("Starting " + table + " data export");
 
 					DbUtil.writeTableExportHeader(table, context);
 
@@ -137,16 +142,20 @@ public class DatabaseExporter {
 							return results;
 						}
 					});
+					context.log(rows.size() + " rows retrieved and transformed from initial queries");
 
 					// Now that we have retrieved and transformed existing values, apply any whole-table transforms
+					int tableTransformsApplied = 0;
 					for (RowTransform transform : configuration.getRowTransforms()) {
 						if (transform instanceof TableTransform) {
 							TableTransform tableTransform = (TableTransform)transform;
 							rows.addAll(tableTransform.getNewRows(table, context));
+							tableTransformsApplied++;
 						}
 					}
-
-					System.out.println("Number retrieved: " + rows.size());
+					if (tableTransformsApplied > 0) {
+						context.log(rows.size() + " rows resulted in application of " + tableTransformsApplied + " table transforms");
+					}
 
 					if (rows.size() > 0) {
 						out.println("INSERT INTO " + table + " VALUES ");
@@ -165,12 +174,17 @@ public class DatabaseExporter {
 						out.println(";");
 					}
 
+					context.log(rows.size() + " rows exported");
+
 					DbUtil.writeTableExportFooter(table, context);
 				}
 			}
 
-
 			DbUtil.writeExportFooter(context);
+
+			context.log("Exporting Database Completed");
+
+			System.out.println("Export completed in: " + Util.formatTimeDifference(context.getEventLog().getTotalTime()));
 
 			out.flush();
 		}

@@ -15,6 +15,7 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.openmrs.contrib.databaseexporter.util.EventLog;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -28,6 +29,7 @@ public class ExportContext {
 	private Configuration configuration;
 	private Connection connection;
 	private PrintWriter writer;
+	private EventLog eventLog;
 	private Map<String, TableConfig> tableData;
 
 	//***** CONSTRUCTOR *****
@@ -36,6 +38,7 @@ public class ExportContext {
 		this.configuration = configuration;
 		this.connection = connection;
 		this.writer = writer;
+		eventLog = new EventLog();
 		tableData = configuration.getTableFilter().getTablesForExport(this);
 	}
 
@@ -45,9 +48,12 @@ public class ExportContext {
 		writer.println(s);
 	}
 
+	public void log(String eventName) {
+		eventLog.logEvent(eventName);
+	}
+
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
 		try {
-			//System.out.println("Query: " + sql + (params != null ? " (" + Util.toString(params) + ")" : ""));
 			QueryRunner runner = new QueryRunner();
 			return runner.query(connection, sql, handler, params);
 		}
@@ -80,6 +86,14 @@ public class ExportContext {
 
 	public void setWriter(PrintWriter writer) {
 		this.writer = writer;
+	}
+
+	public EventLog getEventLog() {
+		return eventLog;
+	}
+
+	public void setEventLog(EventLog eventLog) {
+		this.eventLog = eventLog;
 	}
 
 	public Map<String, TableConfig> getTableData() {

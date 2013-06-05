@@ -174,5 +174,17 @@ public class Util {
 	public static <T> T getRandomElementFromList(List<T> l) {
 		return l.get((int) (Math.random() * l.size()));
 	}
+
+	public static String formatTimeDifference(long ms) {
+		if (ms < 1000) {
+			return "< 1 second";
+		}
+		long seconds = ms/1000;
+		if (seconds < 60) {
+			return ((int)seconds) + " seconds";
+		}
+		int minutes = (int)seconds/60;
+		return minutes + " minutes";
+	}
 }
 

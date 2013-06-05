@@ -91,7 +91,6 @@ public class DbUtil {
 	}
 
 	public static void writeTableSchema(String table, ExportContext context) {
-		System.out.println("Writing schema for " + table);
 		context.write("--");
 		context.write("-- Table structure for table `" + table + "`");
 		context.write("--");

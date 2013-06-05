@@ -59,7 +59,6 @@ public abstract class PatientFilter extends RowFilter {
 
 	@Override
 	public void applyFilters(ExportContext context) {
-		System.out.println("In apply filters for " + getClass().getSimpleName());
 		Collection<Integer> patientIds = getPatientIds(context);
 		if (patientIds != null && !patientIds.isEmpty()) {
 			Collection<Integer> personIds = getPersonIds(context);

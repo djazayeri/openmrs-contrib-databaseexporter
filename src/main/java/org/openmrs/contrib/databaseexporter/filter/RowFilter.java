@@ -31,7 +31,6 @@ public abstract class RowFilter  {
 
 	protected final void applyConstraints(String tableName, String columnName, List<Object> values, ExportContext context) {
 		TableConfig config = context.getTableData().get(tableName);
-		System.out.println("Adding " + (exclusionFilter ? "exclusion" : "inclusion") + " constraints: " + tableName + "." + columnName + ": " + values.size());
 		if (exclusionFilter) {
 			List<Object> existing = config.getColumnConstraints().get(columnName);
 			if (existing != null) {
