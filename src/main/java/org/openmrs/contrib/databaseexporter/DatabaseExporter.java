@@ -80,6 +80,7 @@ public class DatabaseExporter {
 			context.log("Context initialized");
 
 			for (RowFilter filter : configuration.getRowFilters()) {
+				context.log("Applying filter: " + filter.getClass().getSimpleName());
 				filter.applyFilters(context);
 			}
 			context.log(configuration.getRowFilters().size() + " Row filters completed");
@@ -100,11 +101,14 @@ public class DatabaseExporter {
 					DbUtil.writeTableExportHeader(table, context);
 
 					StringBuilder query = new StringBuilder("select * from " + table);
+					context.log("Base query: " + query);
+
 					if (tableConfig.getColumnConstraints() != null && !tableConfig.getColumnConstraints().isEmpty()) {
 						for (String columnName : tableConfig.getColumnConstraints().keySet()) {
 							List<Object> columnValues = tableConfig.getColumnConstraints().get(columnName);
 							query.append(" where ").append(columnName);
 							query.append(" in (");
+							context.log("Constraining " + columnName + " with " + columnValues.size() + " values ");
 							for (Iterator<Object> i = columnValues.iterator(); i.hasNext();) {
 								Object columnValue = i.next();
 								if (columnValue instanceof String) {
@@ -124,6 +128,7 @@ public class DatabaseExporter {
 							ResultSetMetaData md = rs.getMetaData();
 							int numColumns = md.getColumnCount();
 
+							int rowsProcessed = 0;
 							while (rs.next()) {
 								TableRow row = new TableRow(table);
 								for (int i = 1; i <= numColumns; i++) {
@@ -137,6 +142,9 @@ public class DatabaseExporter {
 								}
 								if (includeRow) {
 									results.add(row);
+								}
+								if (++rowsProcessed % 1000 == 0) {
+									context.log("Processed rows " + (rowsProcessed - 1000) + " to " + rowsProcessed);
 								}
 							}
 							return results;

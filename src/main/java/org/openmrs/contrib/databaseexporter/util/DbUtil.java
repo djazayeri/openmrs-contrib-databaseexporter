@@ -14,6 +14,7 @@
 package org.openmrs.contrib.databaseexporter.util;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
@@ -28,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 public class DbUtil {
@@ -63,6 +65,40 @@ public class DbUtil {
 		query.append("select ").append(primaryKeyColumn).append(" from ").append(tableName);
 		query.append(" where ").append(constraintColumn).append(" in (").append(Util.toString(constraintValues)).append(")");
 		return context.executeQuery(query.toString(), new ColumnListHandler<Integer>());
+	}
+
+	public static void executeUpdate(String query, ExportContext context) {
+		QueryRunner qr = new QueryRunner();
+		try {
+			qr.update(context.getConnection(), query);
+		}
+		catch (SQLException e) {
+			throw new RuntimeException("Unable to execute query: " + query, e);
+		}
+	}
+
+	public static void createTemporaryTable(String tableName, Collection<Integer> ids, ExportContext context) {
+
+		executeUpdate("create temporary table " + tableName + " (id integer not null primary key)", context);
+
+		StringBuilder insert = new StringBuilder("insert into " + tableName + " (id) values ");
+		for (Iterator<Integer> i = ids.iterator(); i.hasNext();) {
+			insert.append("(").append(i.next()).append(")");
+			if (i.hasNext()) {
+				insert.append(",");
+			}
+		}
+		executeUpdate(insert.toString(), context);
+	}
+
+	public static void dropTemporaryTable(String tableName, ExportContext context) {
+		QueryRunner qr = new QueryRunner();
+		try {
+			qr.update(context.getConnection(), "drop temporary table " + tableName);
+		}
+		catch (SQLException e) {
+			throw new RuntimeException("Unable to drop temporary table: " + tableName, e);
+		}
 	}
 
 	public static void closeConnection(Connection connection) {
