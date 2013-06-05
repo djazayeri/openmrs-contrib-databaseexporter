@@ -179,14 +179,14 @@ Example:  Ensure at least 100 patients exist who are between 0-2, 3-10, 11-15, 1
 {
 	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingAgeFilter",
 	"numberPerAgeRange": 100,
-	"ageRanges": {
+	"ageRanges": [
 		{"maxAge": 2},
 		{"minAge": 3, "maxAge": 10},
 		{"minAge": 11, "maxAge": 15},
 		{"minAge": 16, "maxAge": 30},
 		{"minAge": 31, "maxAge": 60},
 		{"minAge": 61}
-	}
+	]
 }
 ```
 
@@ -279,7 +279,7 @@ Options:
 Example:  Ensure at least 20 alive patients and 5 dead patients are included in the export
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingIdentifierFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingVitalStatusFilter",
 	"numberAlive": 20,
 	"numberDead": 5
 }

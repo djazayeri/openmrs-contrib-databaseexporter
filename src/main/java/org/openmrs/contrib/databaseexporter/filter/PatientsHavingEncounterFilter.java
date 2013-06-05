@@ -73,14 +73,14 @@ public class PatientsHavingEncounterFilter extends PatientFilter {
 	protected String createQuery(String constraintColumn, Integer constraintValue, Integer num, ORDER order) {
 		StringBuilder q = new StringBuilder();
 		if (order == ORDER.NUM_OBS_DESC) {
-			q.append("select	distinct patient_id from (");
+			q.append("select	distinct p.patient_id from (");
 			q.append("	select 		e.patient_id, e.encounter_id, count(*) ");
 			q.append(	"from 		encounter e, obs o ");
 			q.append("	where 		e.encounter_id = o.encounter_id and e.voided = 0 and o.voided = 0 ");
 			q.append("	and			e." + constraintColumn + " = " + constraintValue + " ");
 			q.append("	group by	e.patient_id, e.encounter_id ");
 			q.append("	order by	count(*) desc ");
-			q.append(")");
+			q.append(")	p limit ").append(num);
 		}
 		else {
 			q.append("select distinct patient_id from encounter where voided = 0");
