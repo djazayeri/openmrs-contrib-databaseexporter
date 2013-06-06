@@ -13,9 +13,9 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
-import org.openmrs.contrib.databaseexporter.util.DbUtil;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.List;
@@ -25,15 +25,24 @@ import java.util.List;
  */
 public class UserTransform extends RowTransform {
 
+	/**
+	 * This allows us the possibility of expanding to a random distribution of user replacements
+	 * For now, however, we are not supporting this since it is difficult to coordinate with user filtering
+	 */
+	public enum ReferenceReplacementStrategy {
+		NONE, ADMIN
+	}
+
 	//***** INTERNAL VARIABLES *****
+	private Integer adminUserId;
 	private List<String> foreignKeys = null;
 
 	//***** PROPERTIES *****
 
-	private List<Integer> usersToKeep;
 	private String systemIdReplacement;
 	private String usernameReplacement;
 	private String passwordReplacement;
+	private ReferenceReplacementStrategy referenceReplacementStrategy;
 
 	//***** CONSTRUCTORS *****
 
@@ -46,63 +55,59 @@ public class UserTransform extends RowTransform {
 		if (tableName.equals("users") || tableName.equals("user_property") || tableName.equals("user_role")) {
 			return true;
 		}
-		List<String> foreignKeys = getForeignKeys(context);
-		for (String foreignKey : foreignKeys) {
-			String[] split = foreignKey.split("\\.");
-			if (tableName.equalsIgnoreCase(split[0])) {
-				return true;
+		if (referenceReplacementStrategy != null && referenceReplacementStrategy != ReferenceReplacementStrategy.NONE) {
+			List<String> foreignKeys = getForeignKeys(context);
+			for (String foreignKey : foreignKeys) {
+				String[] split = foreignKey.split("\\.");
+				if (tableName.equalsIgnoreCase(split[0])) {
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
+
 		if (row.getTableName().equals("users")) {
-			if (keepUser(row.getRawValue("user_id"))) {
-				Object systemId = row.getRawValue("system_id");
-				if (systemIdReplacement != null && !systemId.equals("admin") && !systemId.equals("daemon")) {
-					row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
-				}
-				Object username = row.getRawValue("username");
-				if (usernameReplacement != null && !username.equals("admin") && !username.equals("daemon")) {
-					row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
-				}
-				if (passwordReplacement != null) {
-					String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
-					row.setRawValue("password", Util.encodeString(pwAndSalt));
-				}
-				row.setRawValue("secret_question", null);
-				row.setRawValue("secret_answer", null);
-				return true;
+			Object systemId = row.getRawValue("system_id");
+			if (systemIdReplacement != null && !systemId.equals("admin") && !systemId.equals("daemon")) {
+				row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
 			}
-			else {
-				return false;
+			Object username = row.getRawValue("username");
+			if (usernameReplacement != null && !username.equals("admin") && !username.equals("daemon")) {
+				row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
 			}
-		}
-		if (row.getTableName().equals("user_property")) {
-			return false;
-		}
-		if (row.getTableName().equals("user_role") && !keepUser(row.getRawValue("user_id"))) {
-			return false;
-		}
-		List<String> foreignKeys = getForeignKeys(context);
-		for (String foreignKey : foreignKeys) {
-			String[] split = foreignKey.split("\\.");
-			if (row.getTableName().equalsIgnoreCase(split[0])) {
-				row.setRawValue(split[1], getUsersToKeep().get(0));
+			if (passwordReplacement != null) {
+				String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
+				row.setRawValue("password", Util.encodeString(pwAndSalt));
 			}
+			row.setRawValue("secret_question", null);
+			row.setRawValue("secret_answer", null);
 		}
 
-		// TODO: What about tables like serialized_object and sync_record
+		// In this block we change the references to users in tables that foreign key to it, if specified
+		if (referenceReplacementStrategy != null && referenceReplacementStrategy != ReferenceReplacementStrategy.NONE) {
+			List<String> foreignKeys = getForeignKeys(context);
+			for (String foreignKey : foreignKeys) {
+				String[] split = foreignKey.split("\\.");
+				if (row.getTableName().equalsIgnoreCase(split[0])) {
+					row.setRawValue(split[1], getAdminUserId(context));
+				}
+			}
+		}
 
 		return true;
 	}
 
-	public boolean keepUser(Object userId) {
-		return (usersToKeep == null || usersToKeep.isEmpty() || usersToKeep.contains(Integer.valueOf(userId.toString())));
+	private Integer getAdminUserId(ExportContext context) {
+		if (adminUserId == null) {
+			adminUserId = context.executeQuery("select user_id from users where username = 'admin'", new ScalarHandler<Integer>());
+		}
+		return adminUserId;
 	}
 
-	public List<String> getForeignKeys(ExportContext context) {
+	private List<String> getForeignKeys(ExportContext context) {
 		if (foreignKeys == null) {
 			foreignKeys = context.getTableMetadata("users").getForeignKeys("user_id");
 		}
@@ -111,12 +116,12 @@ public class UserTransform extends RowTransform {
 
 	//***** PROPERTY ACCESS *****
 
-	public List<Integer> getUsersToKeep() {
-		return usersToKeep;
+	public ReferenceReplacementStrategy getReferenceReplacementStrategy() {
+		return referenceReplacementStrategy;
 	}
 
-	public void setUsersToKeep(List<Integer> usersToKeep) {
-		this.usersToKeep = usersToKeep;
+	public void setReferenceReplacementStrategy(ReferenceReplacementStrategy referenceReplacementStrategy) {
+		this.referenceReplacementStrategy = referenceReplacementStrategy;
 	}
 
 	public String getSystemIdReplacement() {

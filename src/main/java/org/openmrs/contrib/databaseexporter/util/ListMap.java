@@ -150,7 +150,7 @@ public class ListMap<K, V> implements Map<K, List<V>>  {
 	/**
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
-	public void putAll(K key, List<V> values) {
+	public void putAll(K key, Collection<V> values) {
 		if (values != null) {
 			for (V v : values) {
 				putInList(key, v);

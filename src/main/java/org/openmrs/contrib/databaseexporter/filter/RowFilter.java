@@ -17,6 +17,7 @@ import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableConfig;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public abstract class RowFilter  {
 
 	public abstract void applyFilters(ExportContext context);
 
-	protected final void applyConstraints(String tableName, String columnName, List<Object> values, ExportContext context) {
+	protected final void applyConstraints(String tableName, String columnName, Collection values, ExportContext context) {
 		TableConfig config = context.getTableData().get(tableName);
 		if (exclusionFilter) {
 			config.getExcludeConstraints().putAll(columnName, values);

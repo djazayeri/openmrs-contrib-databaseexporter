@@ -51,11 +51,31 @@ public class DbUtil {
 
 	public static Map<String, TableMetadata> getTableMetadata(ExportContext context) {
 		final Map<String, TableMetadata> ret = new LinkedHashMap<String, TableMetadata>();
+
+		// Get all of the tables
 		String allTableQuery = "select lower(table_name) from information_schema.tables where table_schema = database()";
 		List<String> tables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
 		for (String table : tables) {
 			ret.put(table, new TableMetadata(table));
 		}
+
+		// Retrieve all defined primary keys for each table
+		String primaryKeyQuery = "select lower(table_name), lower(column_name) from information_schema.key_column_usage where table_schema = database() and constraint_name = 'PRIMARY';";
+		context.executeQuery(primaryKeyQuery, new ResultSetHandler<Integer>() {
+			public Integer handle(ResultSet rs) throws SQLException {
+				int rowsHandled = 0;
+				while (rs.next()) {
+					TableMetadata tableMetadata = ret.get(rs.getString(1));
+					if (tableMetadata != null) {
+						tableMetadata.getPrimaryKeys().add(rs.getString(2));
+						rowsHandled++;
+					}
+				}
+				return rowsHandled;
+			}
+		});
+
+		// Retrieve the foreign key relationships for each column in each table
 		StringBuilder foreignKeyQuery = new StringBuilder();
 		foreignKeyQuery.append("select	lower(referenced_table_name), lower(referenced_column_name), lower(table_name), lower(column_name) ");
 		foreignKeyQuery.append("from 	information_schema.key_column_usage ");
@@ -74,27 +94,16 @@ public class DbUtil {
 				return rowsHandled;
 			}
 		});
+
 		return ret;
 	}
 
-	public static List<Integer> getPrimaryKeys(String tableName, String primaryKeyColumn, String constraintColumn, Collection<?> constraintValues, ExportContext context) {
-		StringBuilder query = new StringBuilder();
-		query.append("select ").append(primaryKeyColumn).append(" from ").append(tableName);
-		query.append(" where ").append(constraintColumn).append(" in (").append(Util.toString(constraintValues)).append(")");
-		return context.executeQuery(query.toString(), new ColumnListHandler<Integer>());
-	}
-
 	public static StringBuilder addConstraintToQuery(StringBuilder query, String constraint) {
-		if (query.indexOf(" where ") == -1) {
-			query.append(" where " + constraint);
-		}
-		else {
-			query.append(" and " + constraint);
-		}
+		query.append(query.indexOf(" where") == -1 ? " where " : " and ").append(constraint);
 		return query;
 	}
 
-	public static StringBuilder addInClauseToQuery(StringBuilder query, Collection<Object> l) {
+	public static StringBuilder addInClauseToQuery(StringBuilder query, Collection l) {
 		query.append(" (");
 		for (Iterator<Object> i = l.iterator(); i.hasNext();) {
 			Object columnValue = i.next();
@@ -144,17 +153,35 @@ public class DbUtil {
 
 	public static void writeTableSchema(String table, ExportContext context) {
 		context.write("--");
-		context.write("-- Table structure for table `" + table + "`");
+		context.write("select 'Creating " + table + " schema...';");
 		context.write("--");
+		context.write("");
 		context.write("DROP TABLE IF EXISTS `" + table + "`;");
-		context.write("SET @saved_cs_client     = @@character_set_client;");
-		context.write("SET character_set_client = utf8;");
+		context.write("/*!40101 SET @saved_cs_client     = @@character_set_client */;");
+		context.write("/*!40101 SET character_set_client = utf8 */;");
 
 		Object[] createTableStatement = context.executeQuery("SHOW CREATE TABLE " + table, new ArrayHandler());
 		context.write(createTableStatement[1] + ";");
-		context.write("SET character_set_client = @saved_cs_client;");
+		context.write("/*!40101 SET character_set_client = @saved_cs_client */;");
 	}
 
+	/**
+	 * Write the header that precedes all table data exports
+	 */
+	public static void writeTableExportHeader(String table, ExportContext context) {
+		context.write("");
+		context.write("--");
+		context.write("select 'Inserting data into " + table + "...';");
+		context.write("--");
+		context.write("");
+		context.write("LOCK TABLES `" + table + "` WRITE;");
+		context.write("/*!40000 ALTER TABLE `" + table + "` DISABLE KEYS */;");
+		context.write("");
+	}
+
+	/**
+	 * Write each row of data for a table
+	 */
 	public static void writeInsertRow(TableRow row, int rowNum, ExportContext context) {
 		if (rowNum == 1) {
 			context.getWriter().println("INSERT INTO " + row.getTableName() + " VALUES ");
@@ -171,17 +198,6 @@ public class DbUtil {
 			}
 		}
 		context.getWriter().print(")");
-	}
-
-	/**
-	 * Write the header that precedes all table data exports
-	 */
-	public static void writeTableExportHeader(String table, ExportContext context) {
-		context.write("");
-		context.write("-- Dumping data for table `" + table + "`");
-		context.write("LOCK TABLES `" + table + "` WRITE;");
-		context.write("/*!40000 ALTER TABLE `" + table + "` DISABLE KEYS */;");
-		context.write("");
 	}
 
 	/**

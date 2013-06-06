@@ -16,9 +16,11 @@ package org.openmrs.contrib.databaseexporter;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Encapsulates relevant metadata for a table
@@ -26,6 +28,7 @@ import java.util.Map;
 public class TableMetadata {
 
 	private String tableName;
+	private Set<String> primaryKeys;
 	private ListMap<String, String> foreignKeyMap;
 
 	public TableMetadata(String tableName) {
@@ -38,6 +41,21 @@ public class TableMetadata {
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public boolean isPrimaryKey(String columnName) {
+		return getPrimaryKeys().contains(columnName);
+	}
+
+	public Set<String> getPrimaryKeys() {
+		if (primaryKeys == null) {
+			primaryKeys = new HashSet<String>();
+		}
+		return primaryKeys;
+	}
+
+	public void setPrimaryKeys(Set<String> primaryKeys) {
+		this.primaryKeys = primaryKeys;
 	}
 
 	public List<String> getForeignKeys(String columnName) {
