@@ -104,7 +104,7 @@ public class UserTransform extends RowTransform {
 
 	public List<String> getForeignKeys(ExportContext context) {
 		if (foreignKeys == null) {
-			foreignKeys = DbUtil.getForeignKeyMap(context).get("users.user_id");
+			foreignKeys = context.getTableMetadata("users").getForeignKeys("user_id");
 		}
 		return foreignKeys;
 	}

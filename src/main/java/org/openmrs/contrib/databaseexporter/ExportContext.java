@@ -52,6 +52,10 @@ public class ExportContext {
 		eventLog.logEvent(eventName);
 	}
 
+	public TableMetadata getTableMetadata(String tableName) {
+		return getTableData().get(tableName).getTableMetadata();
+	}
+
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
 		try {
 			QueryRunner runner = new QueryRunner();

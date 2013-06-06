@@ -16,6 +16,8 @@ package org.openmrs.contrib.databaseexporter.filter;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableConfig;
+import org.openmrs.contrib.databaseexporter.TableMetadata;
+import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,11 +47,9 @@ public class TableFilter {
 	public Map<String, TableConfig> getTablesForExport(ExportContext context) {
 		Map<String, TableConfig> tablesToDump = new TreeMap<String, TableConfig>();
 
-		String allTableQuery = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = database()";
-		List<String> allTables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
-
-		for (String tableName : allTables) {
-			TableConfig config = new TableConfig(tableName);
+		Map<String, TableMetadata> tableMetadataMap = DbUtil.getTableMetadata(context);
+		for (String tableName : tableMetadataMap.keySet()) {
+			TableConfig config = new TableConfig(tableMetadataMap.get(tableName));
 
 			boolean exportSchema = getIncludeSchema().isEmpty() || isInList(tableName, getIncludeSchema());
 			exportSchema = exportSchema && !isInList(tableName, getExcludeSchema());

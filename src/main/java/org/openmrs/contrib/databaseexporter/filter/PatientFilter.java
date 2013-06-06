@@ -57,6 +57,13 @@ public abstract class PatientFilter extends RowFilter {
 		addStandardQuery("visit", "visit_id", "visit_id in (select visit_id from encounter where patient_id in :patientIds)");
 	}
 
+	public void constrainPatientData(ExportContext context) {
+
+		
+
+
+	}
+
 	@Override
 	public void applyFilters(ExportContext context) {
 		Collection<Integer> patientIds = getPatientIds(context);

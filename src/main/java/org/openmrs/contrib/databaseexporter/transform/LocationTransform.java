@@ -147,7 +147,7 @@ public class LocationTransform extends StructuredAddressTransform {
 
 	public List<String> getLocationForeignKeys(ExportContext context) {
 		if (locationForeignKeys == null) {
-			locationForeignKeys = DbUtil.getForeignKeyMap(context).get("location.location_id");
+			locationForeignKeys = context.getTableMetadata("location").getForeignKeys("location_id");
 			locationForeignKeys.add("person_attribute.value");
 		}
 		return locationForeignKeys;

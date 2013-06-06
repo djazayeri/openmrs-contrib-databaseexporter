@@ -21,6 +21,7 @@ import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ColumnValue;
 import org.openmrs.contrib.databaseexporter.DatabaseCredentials;
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.TableMetadata;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 import org.openmrs.contrib.databaseexporter.util.Util;
@@ -32,7 +33,9 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DbUtil {
 
@@ -46,20 +49,32 @@ public class DbUtil {
 		}
 	}
 
-	public static ListMap<String, String> getForeignKeyMap(ExportContext context) {
-		StringBuilder query = new StringBuilder();
-		query.append("select	referenced_table_name, referenced_column_name, table_name, column_name ");
-		query.append("from 		information_schema.key_column_usage ");
-		query.append("where 	table_schema = database()");
-		return context.executeQuery(query.toString(), new ResultSetHandler<ListMap<String, String>>() {
-			public ListMap<String, String> handle(ResultSet rs) throws SQLException {
-				ListMap<String, String> ret = new ListMap<String, String>();
+	public static Map<String, TableMetadata> getTableMetadata(ExportContext context) {
+		final Map<String, TableMetadata> ret = new LinkedHashMap<String, TableMetadata>();
+		String allTableQuery = "select lower(table_name) from information_schema.tables where table_schema = database()";
+		List<String> tables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
+		for (String table : tables) {
+			ret.put(table, new TableMetadata(table));
+		}
+		StringBuilder foreignKeyQuery = new StringBuilder();
+		foreignKeyQuery.append("select	lower(referenced_table_name), lower(referenced_column_name), lower(table_name), lower(column_name) ");
+		foreignKeyQuery.append("from 	information_schema.key_column_usage ");
+		foreignKeyQuery.append("where 	table_schema = database()");
+		context.executeQuery(foreignKeyQuery.toString(), new ResultSetHandler<Integer>() {
+			public Integer handle(ResultSet rs) throws SQLException {
+				int rowsHandled = 0;
 				while (rs.next()) {
-					ret.putInList(rs.getString(1) + "." + rs.getString(2), rs.getString(3) + "." + rs.getString(4));
+					TableMetadata tableMetadata = ret.get(rs.getString(1));
+					if (tableMetadata != null) {
+						ListMap<String, String> foreignKeyMap = tableMetadata.getForeignKeyMap();
+						foreignKeyMap.putInList(rs.getString(2), rs.getString(3) + "." + rs.getString(4));
+						rowsHandled++;
+					}
 				}
-				return ret;
+				return rowsHandled;
 			}
 		});
+		return ret;
 	}
 
 	public static List<Integer> getPrimaryKeys(String tableName, String primaryKeyColumn, String constraintColumn, Collection<?> constraintValues, ExportContext context) {
@@ -99,16 +114,6 @@ public class DbUtil {
 		}
 		catch (SQLException e) {
 			throw new RuntimeException("Unable to execute query: " + query, e);
-		}
-	}
-
-	public static void dropTemporaryTable(String tableName, ExportContext context) {
-		QueryRunner qr = new QueryRunner();
-		try {
-			qr.update(context.getConnection(), "drop temporary table " + tableName);
-		}
-		catch (SQLException e) {
-			throw new RuntimeException("Unable to drop temporary table: " + tableName, e);
 		}
 	}
 

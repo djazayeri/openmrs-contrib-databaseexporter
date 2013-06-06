@@ -159,7 +159,7 @@ public class DatabaseExporter {
 										DbUtil.writeInsertRow(row, rowsAdded, context);
 									}
 									if (rowsChecked % 1000 == 0) {
-										context.log("Processed rows " + (rowsChecked - 1000) + " to " + rowsChecked + " (" + Util.toPercent(rowsChecked, totalRows, 0) + "%)");
+										context.log("Processed " + table + " rows " + (rowsChecked - 1000) + " to " + rowsChecked + " (" + Util.toPercent(rowsChecked, totalRows, 0) + "%)");
 									}
 								}
 								return rowsAdded;

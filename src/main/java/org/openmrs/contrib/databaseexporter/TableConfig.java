@@ -16,7 +16,6 @@ package org.openmrs.contrib.databaseexporter;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -26,7 +25,7 @@ public class TableConfig {
 
 	//***** PROPERTIES *****
 
-	private String tableName;
+	private TableMetadata tableMetadata;
 	private boolean exportSchema = true;
 	private boolean exportData = true;
 	private ListMap<String, Object> includeConstraints;
@@ -34,18 +33,18 @@ public class TableConfig {
 
 	//***** CONSTRUCTORS *****
 
-	public TableConfig(String tableName) {
-		this.tableName = tableName;
+	public TableConfig(TableMetadata tableMetadata) {
+		this.tableMetadata = tableMetadata;
 	}
 
 	//***** METHODS *****
 
-	public String getTableName() {
-		return tableName;
+	public TableMetadata getTableMetadata() {
+		return tableMetadata;
 	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
+	public void setTableMetadata(TableMetadata tableMetadata) {
+		this.tableMetadata = tableMetadata;
 	}
 
 	public boolean isExportSchema() {
