@@ -71,6 +71,9 @@ public class RwandaAddressHierarchyTransform extends StructuredAddressTransform 
 						row.addColumnValue("type_id", Types.INTEGER, level);
 						row.addColumnValue("parent_id", Types.INTEGER, parentId);
 						row.addColumnValue("user_generated_id", Types.VARCHAR, Integer.toString(entryNum));
+						row.addColumnValue("latitude", Types.DOUBLE, null);
+						row.addColumnValue("longitude", Types.DOUBLE, null);
+						row.addColumnValue("elevation", Types.DOUBLE, null);
 						rows.add(row);
 					}
 				}
