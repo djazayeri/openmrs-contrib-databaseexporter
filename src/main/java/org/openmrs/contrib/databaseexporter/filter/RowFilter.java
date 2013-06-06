@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter.filter;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableConfig;
+import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +39,10 @@ public abstract class RowFilter  {
 		else {
 			config.getIncludeConstraints().putAll(columnName, values);
 		}
+	}
+
+	protected final void registerTransform(RowTransform transform, ExportContext context) {
+		context.getConfiguration().getRowTransforms().add(transform);
 	}
 
 	public String toString() {

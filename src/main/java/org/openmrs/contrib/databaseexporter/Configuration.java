@@ -27,6 +27,7 @@ public class Configuration {
 
 	private DatabaseCredentials sourceDatabaseCredentials;
 	private String targetLocation;
+	private Integer batchSize = 10000;
 
 	private TableFilter tableFilter;
 	private List<RowFilter> rowFilters;
@@ -56,6 +57,14 @@ public class Configuration {
 
 	public void setTargetLocation(String targetLocation) {
 		this.targetLocation = targetLocation;
+	}
+
+	public Integer getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
 	}
 
 	public DatabaseCredentials getSourceDatabaseCredentials() {

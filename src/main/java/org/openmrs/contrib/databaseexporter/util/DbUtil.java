@@ -103,7 +103,7 @@ public class DbUtil {
 		return query;
 	}
 
-	public static StringBuilder addInClauseToQuery(StringBuilder query, Collection l) {
+	public static StringBuilder addInClauseToQuery(StringBuilder query, Collection<Object> l) {
 		query.append(" (");
 		for (Iterator<Object> i = l.iterator(); i.hasNext();) {
 			Object columnValue = i.next();
@@ -182,12 +182,16 @@ public class DbUtil {
 	/**
 	 * Write each row of data for a table
 	 */
-	public static void writeInsertRow(TableRow row, int rowNum, ExportContext context) {
-		if (rowNum == 1) {
-			context.getWriter().println("INSERT INTO " + row.getTableName() + " VALUES ");
+	public static void writeInsertRow(TableRow row, long rowIndex, long rowsAdded, ExportContext context) {
+		if (rowIndex == 1) {
+			if (rowsAdded > 1) {
+				context.write(";");
+				context.write("");
+			}
+			context.write("INSERT INTO " + row.getTableName() + " VALUES ");
 		}
 		else {
-			context.getWriter().println(",");
+			context.write(",");
 		}
 		context.getWriter().print("    (");
 		for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {

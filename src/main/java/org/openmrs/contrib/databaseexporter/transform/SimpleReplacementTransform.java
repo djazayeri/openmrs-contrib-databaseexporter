@@ -18,7 +18,9 @@ import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for a transform that can manipulate a row in one or more tables
@@ -26,6 +28,7 @@ import java.util.List;
 public class SimpleReplacementTransform extends RowTransform {
 
 	private List<String> tableAndColumnList;
+	private Map<String, String> constraints;
 	private Object replacement;
 
 	@Override
@@ -42,7 +45,13 @@ public class SimpleReplacementTransform extends RowTransform {
 		for (String column : row.getColumns()) {
 			if (tableAndColumnList.contains(row.getTableName() + "." + column)) {
 				if (row.getRawValue(column) != null) {
-					row.setRawValue(column, Util.evaluateExpression(replacement, row));
+					boolean passes = true;
+					for (String constraintColumnName : getConstraints().keySet()) {
+						passes = passes && Util.areEqualStr(row.getRawValue(constraintColumnName), getConstraints().get(constraintColumnName));
+					}
+					if (passes) {
+						row.setRawValue(column, Util.evaluateExpression(replacement, row));
+					}
 				}
 			}
 		}
@@ -58,6 +67,17 @@ public class SimpleReplacementTransform extends RowTransform {
 
 	public void setTableAndColumnList(List<String> tableAndColumnList) {
 		this.tableAndColumnList = tableAndColumnList;
+	}
+
+	public Map<String, String> getConstraints() {
+		if (constraints == null) {
+			constraints = new HashMap<String, String>();
+		}
+		return constraints;
+	}
+
+	public void setConstraints(Map<String, String> constraints) {
+		this.constraints = constraints;
 	}
 
 	public Object getReplacement() {

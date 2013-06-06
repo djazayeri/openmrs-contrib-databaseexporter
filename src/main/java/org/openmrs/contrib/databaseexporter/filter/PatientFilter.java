@@ -19,7 +19,9 @@ import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Row filter which filters the patient data that is included in the export
@@ -31,9 +33,10 @@ public abstract class PatientFilter extends RowFilter {
 	private List<FilterQuery> standardQueries = new ArrayList<FilterQuery>();  // Built-in filter queries
 	private List<FilterQuery> customQueries = new ArrayList<FilterQuery>();  // Extended filter queries
 
-	protected List<Integer> getPersonIds(ExportContext context) {
+	protected Set<Integer> getPersonIds(ExportContext context) {
 		Collection<Integer> pIds = getPatientIds(context);
-		List<Integer> ret = new ArrayList<Integer>();
+		Set<Integer> ret = new HashSet<Integer>(pIds);
+		ret.addAll(context.executeQuery("select person_id from users where username in ('admin','daemon')", new ColumnListHandler<Integer>()));
 		ret.addAll(context.executeQuery("select person_b from relationship where person_a in (" + Util.toString(pIds) + ")", new ColumnListHandler<Integer>()));
 		ret.addAll(context.executeQuery("select person_a from relationship where person_b in (" + Util.toString(pIds) + ")", new ColumnListHandler<Integer>()));
 		return ret;
