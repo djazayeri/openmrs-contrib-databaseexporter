@@ -28,6 +28,16 @@ public class SimpleReplacementTransform extends RowTransform {
 	private List<String> tableAndColumnList;
 	private Object replacement;
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		for (String s : tableAndColumnList) {
+			if (s.startsWith(tableName + ".")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		for (String column : row.getColumns()) {
 			if (tableAndColumnList.contains(row.getTableName() + "." + column)) {

@@ -14,6 +14,7 @@
 package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
@@ -87,105 +88,117 @@ public class DatabaseExporter {
 
 			DbUtil.writeExportHeader(context);
 
-			for (final String table : context.getTableData().keySet()) {
-				TableConfig tableConfig = context.getTableData().get(table);
+			context.log("Preparing temporary tables based on the filter results");
+			QueryBuilder queryBuilder = new QueryBuilder();
+			try {
+				queryBuilder.prepareTemporaryTablesForExport(context);
 
-				if (tableConfig.isExportSchema()) {
-					DbUtil.writeTableSchema(table, context);
-					context.log(table + " schema exported");
+				for (final String table : context.getTableData().keySet()) {
+					TableConfig tableConfig = context.getTableData().get(table);
+
+					if (tableConfig.isExportSchema()) {
+						DbUtil.writeTableSchema(table, context);
+						context.log(table + " schema exported");
+					}
+
+					if (tableConfig.isExportData()) {
+						context.log("Starting " + table + " data export");
+
+						DbUtil.writeTableExportHeader(table, context);
+
+						context.log("Constructing query");
+						String query = queryBuilder.buildQuery(table, context);
+
+						context.log("Determining applicable transforms for table");
+						List<RowTransform> transforms = new ArrayList<RowTransform>();
+						for (RowTransform transform : configuration.getRowTransforms()) {
+							if (transform.canTransform(table, context)) {
+								transforms.add(transform);
+							}
+						}
+
+						context.log("Determining number of rows for table");
+						String rowNumQuery = query.replace("*", "count(*)");
+						final Long totalRows = context.executeQuery(rowNumQuery, new ScalarHandler<Long>());
+
+						context.log("***************************** Executing query **************************");
+						context.log("Query: " + query);
+						context.log("Transforms: " + transforms);
+						context.log("Total Rows: " + totalRows);
+						context.log("********************************************************************");
+
+						List<TableRow> rows = context.executeQuery(query, new ResultSetHandler<List<TableRow>>() {
+
+							public List<TableRow> handle(ResultSet rs) throws SQLException {
+
+								List<TableRow> results = new ArrayList<TableRow>();
+								ResultSetMetaData md = rs.getMetaData();
+								int numColumns = md.getColumnCount();
+
+								int rowNum = 0;
+								while (rs.next()) {
+									rowNum++;
+									TableRow row = new TableRow(table);
+									for (int i = 1; i <= numColumns; i++) {
+										String columnName = md.getColumnName(i);
+										ColumnValue value = new ColumnValue(table, columnName, md.getColumnType(i), rs.getObject(i));
+										row.addColumnValue(columnName, value);
+									}
+									boolean includeRow = true;
+									for (RowTransform transform : configuration.getRowTransforms()) {
+										includeRow = includeRow && transform.applyTransform(row, context);
+									}
+									if (includeRow) {
+										results.add(row);
+									}
+									if (rowNum % 1000 == 0) {
+										context.log("Processed rows " + (rowNum - 1000) + " to " + rowNum + " (" + Util.toPercent(rowNum, totalRows, 0) + "%)");
+									}
+								}
+								return results;
+							}
+						});
+						context.log(rows.size() + " rows retrieved and transformed from initial queries");
+
+						// Now that we have retrieved and transformed existing values, apply any whole-table transforms
+						int tableTransformsApplied = 0;
+						for (RowTransform transform : configuration.getRowTransforms()) {
+							if (transform instanceof TableTransform) {
+								TableTransform tableTransform = (TableTransform)transform;
+								rows.addAll(tableTransform.getNewRows(table, context));
+								tableTransformsApplied++;
+							}
+						}
+						if (tableTransformsApplied > 0) {
+							context.log(rows.size() + " rows resulted in application of " + tableTransformsApplied + " table transforms");
+						}
+
+						if (rows.size() > 0) {
+							out.println("INSERT INTO " + table + " VALUES ");
+							for (Iterator<TableRow> i = rows.iterator(); i.hasNext();) {
+								TableRow row = i.next();
+								out.print("    (");
+								for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {
+									ColumnValue columnValue = valIter.next();
+									out.print(columnValue.getValueForExport());
+									if (valIter.hasNext()) {
+										out.print(",");
+									}
+								}
+								out.println(")" + (i.hasNext() ? "," : ""));
+							}
+							out.println(";");
+						}
+
+						context.log(rows.size() + " rows exported");
+
+						DbUtil.writeTableExportFooter(table, context);
+					}
 				}
-
-				if (tableConfig.isExportData()) {
-					context.log("Starting " + table + " data export");
-
-					DbUtil.writeTableExportHeader(table, context);
-
-					StringBuilder query = new StringBuilder("select * from " + table);
-					context.log("Base query: " + query);
-
-					if (tableConfig.getColumnConstraints() != null && !tableConfig.getColumnConstraints().isEmpty()) {
-						for (String columnName : tableConfig.getColumnConstraints().keySet()) {
-							List<Object> columnValues = tableConfig.getColumnConstraints().get(columnName);
-							query.append(" where ").append(columnName);
-							query.append(" in (");
-							context.log("Constraining " + columnName + " with " + columnValues.size() + " values ");
-							for (Iterator<Object> i = columnValues.iterator(); i.hasNext();) {
-								Object columnValue = i.next();
-								if (columnValue instanceof String) {
-									columnValue = "'" + columnValue + "'";
-								}
-								query.append(columnValue).append(i.hasNext() ? "," : "");
-							}
-							query.append(")");
-						}
-					}
-
-					List<TableRow> rows = context.executeQuery(query.toString(), new ResultSetHandler<List<TableRow>>() {
-
-						public List<TableRow> handle(ResultSet rs) throws SQLException {
-
-							List<TableRow> results = new ArrayList<TableRow>();
-							ResultSetMetaData md = rs.getMetaData();
-							int numColumns = md.getColumnCount();
-
-							int rowsProcessed = 0;
-							while (rs.next()) {
-								TableRow row = new TableRow(table);
-								for (int i = 1; i <= numColumns; i++) {
-									String columnName = md.getColumnName(i);
-									ColumnValue value = new ColumnValue(table, columnName, md.getColumnType(i), rs.getObject(i));
-									row.addColumnValue(columnName, value);
-								}
-								boolean includeRow = true;
-								for (RowTransform transform : configuration.getRowTransforms()) {
-									includeRow = includeRow && transform.applyTransform(row, context);
-								}
-								if (includeRow) {
-									results.add(row);
-								}
-								if (++rowsProcessed % 1000 == 0) {
-									context.log("Processed rows " + (rowsProcessed - 1000) + " to " + rowsProcessed);
-								}
-							}
-							return results;
-						}
-					});
-					context.log(rows.size() + " rows retrieved and transformed from initial queries");
-
-					// Now that we have retrieved and transformed existing values, apply any whole-table transforms
-					int tableTransformsApplied = 0;
-					for (RowTransform transform : configuration.getRowTransforms()) {
-						if (transform instanceof TableTransform) {
-							TableTransform tableTransform = (TableTransform)transform;
-							rows.addAll(tableTransform.getNewRows(table, context));
-							tableTransformsApplied++;
-						}
-					}
-					if (tableTransformsApplied > 0) {
-						context.log(rows.size() + " rows resulted in application of " + tableTransformsApplied + " table transforms");
-					}
-
-					if (rows.size() > 0) {
-						out.println("INSERT INTO " + table + " VALUES ");
-						for (Iterator<TableRow> i = rows.iterator(); i.hasNext();) {
-							TableRow row = i.next();
-							out.print("    (");
-							for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {
-								ColumnValue columnValue = valIter.next();
-								out.print(columnValue.getValueForExport());
-								if (valIter.hasNext()) {
-									out.print(",");
-								}
-							}
-							out.println(")" + (i.hasNext() ? "," : ""));
-						}
-						out.println(";");
-					}
-
-					context.log(rows.size() + " rows exported");
-
-					DbUtil.writeTableExportFooter(table, context);
-				}
+			}
+			finally {
+				context.log("Cleaning up temporary tables");
+				queryBuilder.cleanupTemporaryTables(context);
 			}
 
 			DbUtil.writeExportFooter(context);

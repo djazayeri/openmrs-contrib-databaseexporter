@@ -31,6 +31,11 @@ public class PersonAddressTransform extends StructuredAddressTransform {
 
 	//***** INSTANCE METHODS *****
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		return tableName.equals("person_address");
+	}
+
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_address")) {
 			Map<String, String> newAddress = getRandomReplacementAddress(row, context);

@@ -25,6 +25,11 @@ import java.util.List;
  */
 public class UserTransform extends RowTransform {
 
+	//***** INTERNAL VARIABLES *****
+	private List<String> foreignKeys = null;
+
+	//***** PROPERTIES *****
+
 	private List<Integer> usersToKeep;
 	private String systemIdReplacement;
 	private String usernameReplacement;
@@ -35,6 +40,21 @@ public class UserTransform extends RowTransform {
 	public UserTransform() {}
 
 	//***** INSTANCE METHODS *****
+
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		if (tableName.equals("users") || tableName.equals("user_property") || tableName.equals("user_role")) {
+			return true;
+		}
+		List<String> foreignKeys = getForeignKeys(context);
+		for (String foreignKey : foreignKeys) {
+			String[] split = foreignKey.split("\\.");
+			if (tableName.equalsIgnoreCase(split[0])) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("users")) {
@@ -65,7 +85,7 @@ public class UserTransform extends RowTransform {
 		if (row.getTableName().equals("user_role") && !keepUser(row.getRawValue("user_id"))) {
 			return false;
 		}
-		List<String> foreignKeys = DbUtil.getForeignKeyMap(context).get("users.user_id");
+		List<String> foreignKeys = getForeignKeys(context);
 		for (String foreignKey : foreignKeys) {
 			String[] split = foreignKey.split("\\.");
 			if (row.getTableName().equalsIgnoreCase(split[0])) {
@@ -81,6 +101,15 @@ public class UserTransform extends RowTransform {
 	public boolean keepUser(Object userId) {
 		return (usersToKeep == null || usersToKeep.isEmpty() || usersToKeep.contains(Integer.valueOf(userId.toString())));
 	}
+
+	public List<String> getForeignKeys(ExportContext context) {
+		if (foreignKeys == null) {
+			foreignKeys = DbUtil.getForeignKeyMap(context).get("users.user_id");
+		}
+		return foreignKeys;
+	}
+
+	//***** PROPERTY ACCESS *****
 
 	public List<Integer> getUsersToKeep() {
 		return usersToKeep;

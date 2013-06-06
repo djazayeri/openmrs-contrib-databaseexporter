@@ -54,6 +54,22 @@ public class LocationTransform extends StructuredAddressTransform {
 
 	public LocationTransform() {}
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		if (tableName.equals("location")) {
+			return true;
+		}
+		if (scrambleLocationsInData || !getKeepOnlyLocations().isEmpty()) {
+			for (String tableAndColumn : getLocationForeignKeys(context)) {
+				String[] split = tableAndColumn.split("\\.");
+				if (tableName.equals(split[0])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	//***** INSTANCE METHODS *****
 
 	public boolean applyTransform(TableRow row, ExportContext context) {

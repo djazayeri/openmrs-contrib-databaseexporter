@@ -20,6 +20,7 @@ import org.openmrs.contrib.databaseexporter.TableRow;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -185,6 +186,12 @@ public class Util {
 		}
 		int minutes = (int)seconds/60;
 		return minutes + " minutes";
+	}
+
+	public static String toPercent(Number numerator, Number denominator, int decimals) {
+		BigDecimal bd = new BigDecimal(100 * numerator.doubleValue() / denominator.doubleValue());
+		bd = bd.setScale(decimals, BigDecimal.ROUND_HALF_UP);
+		return bd.toString();
 	}
 }
 

@@ -32,14 +32,15 @@ public abstract class RowFilter  {
 	protected final void applyConstraints(String tableName, String columnName, List<Object> values, ExportContext context) {
 		TableConfig config = context.getTableData().get(tableName);
 		if (exclusionFilter) {
-			List<Object> existing = config.getColumnConstraints().get(columnName);
-			if (existing != null) {
-				existing.removeAll(values);
-			}
+			config.getExcludeConstraints().putAll(columnName, values);
 		}
 		else {
-			config.addColumnConstraints(columnName, values);
+			config.getIncludeConstraints().putAll(columnName, values);
 		}
+	}
+
+	public String toString() {
+		return getClass().getSimpleName();
 	}
 
 	public boolean isExclusionFilter() {

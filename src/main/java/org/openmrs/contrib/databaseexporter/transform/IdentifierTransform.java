@@ -38,6 +38,11 @@ public class IdentifierTransform extends RowTransform {
 
 	//***** INSTANCE METHODS *****
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		return tableName.equals("patient_identifier_type") || tableName.equals("patient_identifier");
+	}
+
 	/**
 	 * TODO: Improve this
 	 * This probably isn't a sufficient solution, as we will want to be able to demonstrate

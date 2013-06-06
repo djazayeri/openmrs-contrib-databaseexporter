@@ -37,12 +37,17 @@ public class ScrambleStatesInWorkflowTransform extends RowTransform {
 
 	//***** INSTANCE METHODS *****
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		return tableName.equals("patient_state");
+	}
+
 	public boolean applyTransform(TableRow row, ExportContext context) {
-		if (possibleStates == null || possibleStates.isEmpty()) {
-			String stateQuery = "select program_workflow_state_id from program_workflow_state where program_workflow_id = " + workflowToScramble + " and retired = 0";
-			possibleStates = context.executeQuery(stateQuery, new ColumnListHandler<Integer>());
-		}
 		if (row.getTableName().equalsIgnoreCase("patient_state")) {
+			if (possibleStates == null || possibleStates.isEmpty()) {
+				String stateQuery = "select program_workflow_state_id from program_workflow_state where program_workflow_id = " + workflowToScramble + " and retired = 0";
+				possibleStates = context.executeQuery(stateQuery, new ColumnListHandler<Integer>());
+			}
 			row.setRawValue("state", Util.getRandomElementFromList(possibleStates));
 		}
 		return true;

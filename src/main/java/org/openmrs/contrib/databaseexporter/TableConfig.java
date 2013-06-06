@@ -15,7 +15,9 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Configurable class which can return all tables that are included for an Export
@@ -27,7 +29,8 @@ public class TableConfig {
 	private String tableName;
 	private boolean exportSchema = true;
 	private boolean exportData = true;
-	private ListMap<String, Object> columnConstraints;
+	private ListMap<String, Object> includeConstraints;
+	private ListMap<String, Object> excludeConstraints;
 
 	//***** CONSTRUCTORS *****
 
@@ -61,14 +64,24 @@ public class TableConfig {
 		this.exportData = exportData;
 	}
 
-	public ListMap<String, Object> getColumnConstraints() {
-		if (columnConstraints == null) {
-			columnConstraints = new ListMap<String, Object>();
+	public ListMap<String, Object> getIncludeConstraints() {
+		if (includeConstraints == null) {
+			includeConstraints = new ListMap<String, Object>();
 		}
-		return columnConstraints;
+		return includeConstraints;
 	}
 
-	public void addColumnConstraints(String columnName, List<Object> values) {
-		getColumnConstraints().putAll(columnName, values);
+	public ListMap<String, Object> getExcludeConstraints() {
+		if (excludeConstraints == null) {
+			excludeConstraints = new ListMap<String, Object>();
+		}
+		return excludeConstraints;
+	}
+
+	public Set<String> getAllConstrainedColumns() {
+		Set<String> constrainedColumns = new HashSet();
+		constrainedColumns.addAll(getIncludeConstraints().keySet());
+		constrainedColumns.addAll(getExcludeConstraints().keySet());
+		return constrainedColumns;
 	}
 }

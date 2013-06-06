@@ -13,6 +13,8 @@
  */
 package org.openmrs.contrib.databaseexporter.util;
 
+import java.util.Date;
+
 /**
  * Logger for events, that tracks time
  */
@@ -29,7 +31,7 @@ public class EventLog {
 	public void logEvent(String event) {
 		long currentTime = System.currentTimeMillis();
 		long diff = currentTime - lastTime;
-		System.out.println(event + (diff > 1000 ? " (" + Util.formatTimeDifference(diff) + ")" : ""));
+		System.out.println(new Date() + ": " + event + (diff > 1000 ? " (" + Util.formatTimeDifference(diff) + ")" : ""));
 		lastTime = currentTime;
 	}
 

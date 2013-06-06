@@ -36,6 +36,11 @@ public class RwandaAddressHierarchyTransform extends StructuredAddressTransform 
 
 	//***** INSTANCE METHODS *****
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		return tableName.equals("address_hierarchy");
+	}
+
 	// Remove all existing rows from the address_hierarchy_entry table
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("address_hierarchy")) {

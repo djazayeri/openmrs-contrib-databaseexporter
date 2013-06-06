@@ -67,6 +67,29 @@ public class DbUtil {
 		return context.executeQuery(query.toString(), new ColumnListHandler<Integer>());
 	}
 
+	public static StringBuilder addConstraintToQuery(StringBuilder query, String constraint) {
+		if (query.indexOf(" where ") == -1) {
+			query.append(" where " + constraint);
+		}
+		else {
+			query.append(" and " + constraint);
+		}
+		return query;
+	}
+
+	public static StringBuilder addInClauseToQuery(StringBuilder query, Collection<Object> l) {
+		query.append(" (");
+		for (Iterator<Object> i = l.iterator(); i.hasNext();) {
+			Object columnValue = i.next();
+			if (columnValue instanceof String) {
+				columnValue = "'" + columnValue + "'";
+			}
+			query.append(columnValue).append(i.hasNext() ? "," : "");
+		}
+		query.append(")");
+		return query;
+	}
+
 	public static void executeUpdate(String query, ExportContext context) {
 		QueryRunner qr = new QueryRunner();
 		try {
@@ -75,20 +98,6 @@ public class DbUtil {
 		catch (SQLException e) {
 			throw new RuntimeException("Unable to execute query: " + query, e);
 		}
-	}
-
-	public static void createTemporaryTable(String tableName, Collection<Integer> ids, ExportContext context) {
-
-		executeUpdate("create temporary table " + tableName + " (id integer not null primary key)", context);
-
-		StringBuilder insert = new StringBuilder("insert into " + tableName + " (id) values ");
-		for (Iterator<Integer> i = ids.iterator(); i.hasNext();) {
-			insert.append("(").append(i.next()).append(")");
-			if (i.hasNext()) {
-				insert.append(",");
-			}
-		}
-		executeUpdate(insert.toString(), context);
 	}
 
 	public static void dropTemporaryTable(String tableName, ExportContext context) {

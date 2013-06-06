@@ -27,6 +27,8 @@ import java.util.List;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class RowTransform {
 
+	public abstract boolean canTransform(String tableName, ExportContext context);
+
 	/**
 	 * Provides a mechanism for transforming the contents of a table row before writing it
 	 * Also provides an additional mechanism for excluding a row.  If a transform returns false,
@@ -34,4 +36,7 @@ public abstract class RowTransform {
 	 */
 	public abstract boolean applyTransform(TableRow row, ExportContext context);
 
+	public String toString() {
+		return getClass().getSimpleName();
+	}
 }

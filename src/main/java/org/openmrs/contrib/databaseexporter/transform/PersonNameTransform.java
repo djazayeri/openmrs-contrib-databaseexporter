@@ -50,6 +50,11 @@ public class PersonNameTransform extends RowTransform {
 
 	//***** INSTANCE METHODS *****
 
+	@Override
+	public boolean canTransform(String tableName, ExportContext context) {
+		return tableName.equals("person_name");
+	}
+
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_name")) {
 
