@@ -111,9 +111,13 @@ public class DatabaseExporter {
 
 						context.log("Determining applicable transforms for table");
 						List<RowTransform> transforms = new ArrayList<RowTransform>();
+						List<TableTransform> tableTransforms = new ArrayList<TableTransform>();
 						for (RowTransform transform : configuration.getRowTransforms()) {
 							if (transform.canTransform(table, context)) {
 								transforms.add(transform);
+								if (transform instanceof TableTransform) {
+									tableTransforms.add((TableTransform)transform);
+								};
 							}
 						}
 
@@ -127,17 +131,19 @@ public class DatabaseExporter {
 						context.log("Total Rows: " + totalRows);
 						context.log("********************************************************************");
 
-						List<TableRow> rows = context.executeQuery(query, new ResultSetHandler<List<TableRow>>() {
+						Integer rowsAdded = context.executeQuery(query, new ResultSetHandler<Integer>() {
 
-							public List<TableRow> handle(ResultSet rs) throws SQLException {
+							public Integer handle(ResultSet rs) throws SQLException {
 
 								List<TableRow> results = new ArrayList<TableRow>();
 								ResultSetMetaData md = rs.getMetaData();
 								int numColumns = md.getColumnCount();
 
-								int rowNum = 0;
+								int rowsChecked = 0;
+								int rowsAdded = 0;
 								while (rs.next()) {
-									rowNum++;
+									rowsChecked++;
+
 									TableRow row = new TableRow(table);
 									for (int i = 1; i <= numColumns; i++) {
 										String columnName = md.getColumnName(i);
@@ -149,48 +155,32 @@ public class DatabaseExporter {
 										includeRow = includeRow && transform.applyTransform(row, context);
 									}
 									if (includeRow) {
-										results.add(row);
+										rowsAdded++;
+										DbUtil.writeInsertRow(row, rowsAdded, context);
 									}
-									if (rowNum % 1000 == 0) {
-										context.log("Processed rows " + (rowNum - 1000) + " to " + rowNum + " (" + Util.toPercent(rowNum, totalRows, 0) + "%)");
+									if (rowsChecked % 1000 == 0) {
+										context.log("Processed rows " + (rowsChecked - 1000) + " to " + rowsChecked + " (" + Util.toPercent(rowsChecked, totalRows, 0) + "%)");
 									}
 								}
-								return results;
+								return rowsAdded;
 							}
 						});
-						context.log(rows.size() + " rows retrieved and transformed from initial queries");
+						context.log(rowsAdded + " rows retrieved and transformed from initial queries");
 
 						// Now that we have retrieved and transformed existing values, apply any whole-table transforms
-						int tableTransformsApplied = 0;
-						for (RowTransform transform : configuration.getRowTransforms()) {
-							if (transform instanceof TableTransform) {
-								TableTransform tableTransform = (TableTransform)transform;
-								rows.addAll(tableTransform.getNewRows(table, context));
-								tableTransformsApplied++;
+						for (TableTransform transform : tableTransforms) {
+							context.log("Applying table transform: " + transform);
+							for (TableRow row : transform.getNewRows(table, context)) {
+								rowsAdded++;
+								DbUtil.writeInsertRow(row, rowsAdded, context);
 							}
-						}
-						if (tableTransformsApplied > 0) {
-							context.log(rows.size() + " rows resulted in application of " + tableTransformsApplied + " table transforms");
 						}
 
-						if (rows.size() > 0) {
-							out.println("INSERT INTO " + table + " VALUES ");
-							for (Iterator<TableRow> i = rows.iterator(); i.hasNext();) {
-								TableRow row = i.next();
-								out.print("    (");
-								for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {
-									ColumnValue columnValue = valIter.next();
-									out.print(columnValue.getValueForExport());
-									if (valIter.hasNext()) {
-										out.print(",");
-									}
-								}
-								out.println(")" + (i.hasNext() ? "," : ""));
-							}
+						if (rowsAdded > 0) {
 							out.println(";");
 						}
 
-						context.log(rows.size() + " rows exported");
+						context.log(rowsAdded + " rows exported");
 
 						DbUtil.writeTableExportFooter(table, context);
 					}

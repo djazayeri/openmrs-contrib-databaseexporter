@@ -18,8 +18,10 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.openmrs.contrib.databaseexporter.ColumnValue;
 import org.openmrs.contrib.databaseexporter.DatabaseCredentials;
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
@@ -146,6 +148,24 @@ public class DbUtil {
 		Object[] createTableStatement = context.executeQuery("SHOW CREATE TABLE " + table, new ArrayHandler());
 		context.write(createTableStatement[1] + ";");
 		context.write("SET character_set_client = @saved_cs_client;");
+	}
+
+	public static void writeInsertRow(TableRow row, int rowNum, ExportContext context) {
+		if (rowNum == 1) {
+			context.getWriter().println("INSERT INTO " + row.getTableName() + " VALUES ");
+		}
+		else {
+			context.getWriter().println(",");
+		}
+		context.getWriter().print("    (");
+		for (Iterator<ColumnValue> valIter = row.getColumnValueMap().values().iterator(); valIter.hasNext();) {
+			ColumnValue columnValue = valIter.next();
+			context.getWriter().print(columnValue.getValueForExport());
+			if (valIter.hasNext()) {
+				context.getWriter().print(",");
+			}
+		}
+		context.getWriter().print(")");
 	}
 
 	/**
