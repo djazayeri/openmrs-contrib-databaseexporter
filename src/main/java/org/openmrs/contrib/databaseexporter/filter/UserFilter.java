@@ -16,11 +16,9 @@ package org.openmrs.contrib.databaseexporter.filter;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform;
-import org.openmrs.contrib.databaseexporter.util.DbUtil;
+import org.openmrs.contrib.databaseexporter.transform.ForeignKeyTransform;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,10 +31,6 @@ public class UserFilter extends RowFilter {
 	//***** PROPERTIES *****
 
 	private List<Integer> limitToUsers;
-
-	//***** CONSTRUCTORS *****
-
-	public UserFilter() { }
 
 	//***** INSTANCE METHODS *****
 
@@ -56,13 +50,10 @@ public class UserFilter extends RowFilter {
 			applyConstraints("usagestatistics_daily", "user_id", l, context);
 			applyConstraints("usagestatistics_usage", "user_id", l, context);
 
-			// Since we are limiting the users, add a transform that sets the person on the user
-			Integer adminPerson = context.executeQuery("select person_id from users where username = 'admin'", new ScalarHandler<Integer>());
-
-			SimpleReplacementTransform userPersonTransform = new SimpleReplacementTransform();
-			userPersonTransform.setTableAndColumnList(Arrays.asList("users.person_id"));
-			userPersonTransform.setReplacement(adminPerson);
-			context.getConfiguration().getRowTransforms().add(userPersonTransform);
+			ForeignKeyTransform foreignKeyTransform = new ForeignKeyTransform();
+			foreignKeyTransform.setReferencedTable("users");
+			foreignKeyTransform.setReferencedColumn("user_id");
+			registerTransform(foreignKeyTransform, context);
 		}
 	}
 
