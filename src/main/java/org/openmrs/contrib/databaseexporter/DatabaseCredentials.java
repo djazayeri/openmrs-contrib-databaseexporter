@@ -28,11 +28,15 @@ public class DatabaseCredentials {
 
 	public DatabaseCredentials() {}
 
-	public DatabaseCredentials(String driver, String url, String user, String password) {
-		this.driver = driver;
+	public DatabaseCredentials(String url, String user, String password) {
 		this.url = url;
 		this.user = user;
 		this.password = password;
+	}
+
+	public DatabaseCredentials(String driver, String url, String user, String password) {
+		this(url, user, password);
+		this.driver = driver;
 	}
 
 	//***** PROPERTY ACCESS *****
