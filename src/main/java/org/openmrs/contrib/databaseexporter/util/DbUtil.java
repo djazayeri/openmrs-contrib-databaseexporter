@@ -30,12 +30,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DbUtil {
 
@@ -114,6 +117,36 @@ public class DbUtil {
 		}
 		query.append(")");
 		return query;
+	}
+
+	public static String findJoinQuery(String fromTable, String toTable, ExportContext context) {
+		return findJoinQuery(fromTable, toTable, new HashSet<String>(), context);
+	}
+
+	private static String findJoinQuery(String fromTable, String toTable, Set<String> checkedTables, ExportContext context) {
+		List<String> columnsToIgnore = Arrays.asList("creator", "created_by", "changed_by", "retired_by", "voided_by");
+		ListMap<String, String> fkMap = context.getTableMetadata(toTable).getForeignKeyMap();
+		for (String toColumn : fkMap.keySet()) {
+			for (String foreignKey : fkMap.get(toColumn)) {
+				String[] fkTabCol = foreignKey.split("\\.");
+				if (!columnsToIgnore.contains(fkTabCol[1])) {
+					if (!checkedTables.contains(foreignKey)) {
+						checkedTables.add(foreignKey);
+						String joinQuery = "inner join " + toTable + " on " + foreignKey + " = " + toTable + "." + toColumn;
+						if (foreignKey.startsWith(fromTable + ".")) {
+							return joinQuery;
+						}
+						else {
+							String subQuery = findJoinQuery(fromTable, fkTabCol[0], checkedTables, context);
+							if (subQuery != null) {
+								return subQuery + " " + joinQuery;
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	public static void executeUpdate(String query, ExportContext context) {
