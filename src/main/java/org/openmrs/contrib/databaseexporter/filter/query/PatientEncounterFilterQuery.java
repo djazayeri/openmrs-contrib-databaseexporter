@@ -11,19 +11,20 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.filter.query;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Returns a particular number of patients that have one or more encounters of each type
  */
-public class PatientsHavingEncounterFilter extends PatientFilter {
+public class PatientEncounterFilterQuery extends FilterQuery {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_OBS_DESC
@@ -40,13 +41,13 @@ public class PatientsHavingEncounterFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientsHavingEncounterFilter() {}
+	public PatientEncounterFilterQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Collection<Integer> getPatientIds(ExportContext context) {
-		List<Integer> ret = new ArrayList<Integer>();
+	public Set<Integer> getIds(ExportContext context) {
+		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {
 			String q = "select encounter_type_id from encounter_type" + (includeRetired ? "" : " where retired = 0");

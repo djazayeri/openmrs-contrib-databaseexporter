@@ -33,7 +33,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class DatabaseExporter {
@@ -80,17 +79,13 @@ public class DatabaseExporter {
 			final ExportContext context = new ExportContext(configuration, connection, out);
 			context.log("Context initialized");
 
-			for (RowFilter filter : configuration.getRowFilters()) {
-				context.log("Applying filter: " + filter.getClass().getSimpleName());
-				filter.applyFilters(context);
-			}
-
 			DbUtil.writeExportHeader(context);
 
-			context.log("Preparing temporary tables based on the filter results");
-			QueryBuilder queryBuilder = new QueryBuilder();
 			try {
-				queryBuilder.prepareTemporaryTablesForExport(context);
+				for (RowFilter filter : configuration.getRowFilters()) {
+					context.log("Applying filter: " + filter.getClass().getSimpleName());
+					filter.applyFilters(context);
+				}
 
 				for (final String table : context.getTableData().keySet()) {
 					TableConfig tableConfig = context.getTableData().get(table);
@@ -106,7 +101,7 @@ public class DatabaseExporter {
 						DbUtil.writeTableExportHeader(table, context);
 
 						context.log("Constructing query");
-						String query = queryBuilder.buildQuery(table, context);
+						String query = context.buildQuery(table, context);
 
 						context.log("Determining applicable transforms for table");
 						List<RowTransform> transforms = new ArrayList<RowTransform>();
@@ -155,6 +150,9 @@ public class DatabaseExporter {
 									for (RowTransform transform : configuration.getRowTransforms()) {
 										includeRow = includeRow && transform.applyTransform(row, context);
 									}
+									for (RowTransform transform : configuration.getRowTransforms()) {
+										transform.cleanup(row, context);
+									}
 									if (includeRow) {
 										rowsAdded++;
 										rowIndex = (rowIndex >= batchSize ? 0 : rowIndex) + 1;
@@ -196,7 +194,7 @@ public class DatabaseExporter {
 			}
 			finally {
 				context.log("Cleaning up temporary tables");
-				queryBuilder.cleanupTemporaryTables(context);
+				context.cleanupTemporaryTables();
 			}
 
 			DbUtil.writeExportFooter(context);

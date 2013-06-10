@@ -11,19 +11,18 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.filter.query;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientsHavingVitalStatusFilter extends PatientFilter {
+public class PatientVitalStatusFilterQuery extends FilterQuery {
 
 	//***** PROPERTIES *****
 
@@ -32,13 +31,13 @@ public class PatientsHavingVitalStatusFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientsHavingVitalStatusFilter() {}
+	public PatientVitalStatusFilterQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Collection<Integer> getPatientIds(ExportContext context) {
-		List<Integer> ret = new ArrayList<Integer>();
+	public Set<Integer> getIds(ExportContext context) {
+		Set<Integer> ret = new HashSet<Integer>();
 
 		StringBuilder aliveQuery = new StringBuilder();
 		aliveQuery.append("select p.patient_id from patient p, person n ");

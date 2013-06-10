@@ -19,10 +19,18 @@ import org.openmrs.contrib.databaseexporter.util.EventLog;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class ExportContext {
+
+	public static final String TEMPORARY_TABLE_PREFIX = "temp_databaseexporter_";
+	private Set<String> temporaryTableSet = new HashSet<String>();
 
 	//***** PROPERTIES *****
 
@@ -64,6 +72,59 @@ public class ExportContext {
 		catch (Exception e) {
 			throw new RuntimeException("Unable to execute query: " + sql, e);
 		}
+	}
+
+	public void executeUpdate(String query) {
+		QueryRunner qr = new QueryRunner();
+		try {
+			qr.update(connection, query);
+		}
+		catch (SQLException e) {
+			throw new RuntimeException("Unable to execute query: " + query, e);
+		}
+	}
+
+	public void registerInTemporaryTable(String sourceTable, String primaryKeyColumn, Collection<Integer> ids) {
+
+		String tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable;
+
+		log("Preparing temporary table " + tempTableName + " by adding " + ids.size() + " values to " + primaryKeyColumn);
+
+		executeUpdate("create temporary table if not exists " + tempTableName + " (" + primaryKeyColumn + " integer not null primary key)");
+
+		StringBuilder insert = new StringBuilder("insert into " + tempTableName + " (" + primaryKeyColumn + ") values ");
+		for (Iterator<Integer> i = ids.iterator(); i.hasNext();) {
+			Integer id = i.next();
+			insert.append("(").append(id).append(")");
+			if (i.hasNext()) {
+				insert.append(",");
+			}
+		}
+		executeUpdate(insert.toString());
+		getTableData().get(sourceTable).setTemporaryTableName(tempTableName);
+		getTableData().get(sourceTable).setPrimaryKeyName(primaryKeyColumn);
+	}
+
+	public String buildQuery(String tableName, ExportContext context) {
+		TableConfig config = context.getTableData().get(tableName);
+
+		StringBuilder query = new StringBuilder("select * from " + tableName);
+		if (config.getTemporaryTableName() != null) {
+			query.append(" inner join ").append(config.getTemporaryTableName());
+			query.append(" on ").append(tableName).append(".").append(config.getPrimaryKeyName());
+			query.append(" = ").append(config.getTemporaryTableName()).append(".").append(config.getPrimaryKeyName());
+		}
+
+		return query.toString();
+	}
+
+	public void cleanupTemporaryTables() {
+		for (String tableName : temporaryTableSet) {
+			if (tableName.startsWith(TEMPORARY_TABLE_PREFIX)) {
+				executeUpdate("drop table " + tableName);
+			}
+		}
+		temporaryTableSet.clear();
 	}
 
 	//***** PROPERTY ACCESS *****

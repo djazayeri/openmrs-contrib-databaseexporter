@@ -15,27 +15,20 @@ package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
-import java.util.Collection;
-
 /**
- * Filter patients given a fixed set of patient ids
+ * Filters PatientIdentifiers
  */
-public class PatientIdFilter extends PatientFilter {
+public class PatientProgramFilter extends RowFilter {
 
-	private Collection<Integer> patientIds;
-
-	public PatientIdFilter() {}
+	//***** INSTANCE METHODS *****
 
 	@Override
-	public Collection<Integer> getPatientIds(ExportContext context) {
-		return getPatientIds();
+	public String getTableName() {
+		return "patient_program";
 	}
 
-	public Collection<Integer> getPatientIds() {
-		return patientIds;
-	}
-
-	public void setPatientIds(Collection<Integer> patientIds) {
-		this.patientIds = patientIds;
+	@Override
+	public String getPrimaryKeyColumn() {
+		return "patient_program_id";
 	}
 }

@@ -19,10 +19,8 @@ import org.openmrs.contrib.databaseexporter.TableRow;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -199,6 +197,25 @@ public class Util {
 		BigDecimal bd = new BigDecimal(100 * numerator.doubleValue() / denominator.doubleValue());
 		bd = bd.setScale(decimals, BigDecimal.ROUND_HALF_UP);
 		return bd.toString();
+	}
+
+	public static boolean matchesPattern(String s, String pattern) {
+		boolean matches = false;
+		matches = matches || s.equalsIgnoreCase(pattern);
+		matches = matches || (pattern.endsWith("*") && s.startsWith(pattern.substring(0, pattern.length()-1)));
+		matches = matches || (pattern.startsWith("*") && s.endsWith(pattern.substring(1, pattern.length())));
+		return matches;
+	}
+
+	public static boolean matchesAnyPattern(String s, Collection<String> patternsToCheck) {
+		if (patternsToCheck != null) {
+			for (String pattern : patternsToCheck) {
+				if (matchesPattern(s, pattern)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
 

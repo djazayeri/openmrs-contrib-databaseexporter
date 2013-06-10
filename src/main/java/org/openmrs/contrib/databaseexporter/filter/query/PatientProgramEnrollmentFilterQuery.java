@@ -11,19 +11,20 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.filter.query;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Returns a particular number of patients that have one or more program enrollments of each type
  */
-public class PatientsHavingProgramEnrollmentFilter extends PatientFilter {
+public class PatientProgramEnrollmentFilterQuery extends FilterQuery {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_ENCOUNTERS_DESC
@@ -39,13 +40,13 @@ public class PatientsHavingProgramEnrollmentFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientsHavingProgramEnrollmentFilter() {}
+	public PatientProgramEnrollmentFilterQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Collection<Integer> getPatientIds(ExportContext context) {
-		List<Integer> ret = new ArrayList<Integer>();
+	public Set<Integer> getIds(ExportContext context) {
+		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToPrograms == null || limitToPrograms.isEmpty()) {
 			String q = "select program_id from program" + (includeRetired ? "" : " where retired = 0");

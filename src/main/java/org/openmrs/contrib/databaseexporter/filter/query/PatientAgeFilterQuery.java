@@ -11,20 +11,21 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.filter.query;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
-import org.openmrs.contrib.databaseexporter.util.AgeRange;
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.util.AgeRange;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientsHavingAgeFilter extends PatientFilter {
+public class PatientAgeFilterQuery extends FilterQuery {
 
 	//***** PROPERTIES *****
 
@@ -33,13 +34,13 @@ public class PatientsHavingAgeFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientsHavingAgeFilter() {}
+	public PatientAgeFilterQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Collection<Integer> getPatientIds(ExportContext context) {
-		List<Integer> ret = new ArrayList<Integer>();
+	public Set<Integer> getIds(ExportContext context) {
+		Set<Integer> ret = new HashSet<Integer>();
 		for (AgeRange ar : getAgeRanges()) {
 			StringBuilder q = new StringBuilder();
 			q.append("select distinct p.patient_id from patient p, person n ");

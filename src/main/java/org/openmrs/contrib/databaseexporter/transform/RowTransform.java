@@ -36,6 +36,12 @@ public abstract class RowTransform {
 	 */
 	public abstract boolean applyTransform(TableRow row, ExportContext context);
 
+	/**
+	 * Called after all transforms have had their applyMethod called, in the same order as the initail
+	 * applications occurred. Typically used to clean up any foreign key references that are missing
+	 */
+	public void cleanup(TableRow row, ExportContext context) { }
+
 	public String toString() {
 		return getClass().getSimpleName();
 	}

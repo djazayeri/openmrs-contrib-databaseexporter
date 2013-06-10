@@ -161,7 +161,7 @@ Options:
 Example:  Export data for only 5 specific patients for testing
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientIdFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.IdFilterQuery",
 	"patientIds": [111,222,333,444,555]
 }
 ```
@@ -177,7 +177,7 @@ Options:
 Example:  Ensure at least 100 patients exist who are between 0-2, 3-10, 11-15, 16-30, 31-60, and 60+ years old
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingAgeFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientAgeFilterQuery",
 	"numberPerAgeRange": 100,
 	"ageRanges": [
 		{"maxAge": 2},
@@ -205,7 +205,7 @@ Options:
 Example:  Ensure at least 5 patients with each non-retired encounter type are included, and ensure these are the encounters that have the most number of Obs associated with them for each type
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingEncounterFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientEncounterFilterQuery",
 	"numberPerType": 5,
 	"numberPerForm": 0,
 	"order": "NUM_OBS_DESC"
@@ -225,7 +225,7 @@ Options:
 Example:  Ensure at least 20 patients with active enrollments and and 50 patients with completed enrollments are included for the programs with programId 1 and 3
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingProgramEnrollmentFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientProgramEnrollmentFilterQuery",
 	"numberActivePerProgram": 20,
 	"numberCompletedPerProgram": 50,
 	"limitToPrograms": [1,3]
@@ -244,7 +244,7 @@ Options:
 Example:  Ensure at least 5 patients with each relationship type, including retired types, is included in the export
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingRelationshipFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientRelationshipFilterQuery",
 	"numberPerType": 5,
 	"includeRetired": true
 }
@@ -262,7 +262,7 @@ Options:
 Example:  Ensure at least 100 patients with each non-retired identifier type is included in the export
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingIdentifierFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientIdentifierFilterQuery",
 	"numberPerType": 100,
 	"includeRetired": false
 }
@@ -279,7 +279,7 @@ Options:
 Example:  Ensure at least 20 alive patients and 5 dead patients are included in the export
 ```
 {
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientsHavingVitalStatusFilter",
+	"@class" : "org.openmrs.contrib.databaseexporter.filter.query.PatientVitalStatusFilterQuery",
 	"numberAlive": 20,
 	"numberDead": 5
 }

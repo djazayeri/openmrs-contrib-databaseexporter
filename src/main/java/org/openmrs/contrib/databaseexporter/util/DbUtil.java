@@ -14,7 +14,6 @@
 package org.openmrs.contrib.databaseexporter.util;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
@@ -23,14 +22,12 @@ import org.openmrs.contrib.databaseexporter.DatabaseCredentials;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableMetadata;
 import org.openmrs.contrib.databaseexporter.TableRow;
-import org.openmrs.contrib.databaseexporter.util.ListMap;
-import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -52,31 +49,19 @@ public class DbUtil {
 		}
 	}
 
+	public static List<String> getAllTables(ExportContext context) {
+		String allTableQuery = "select lower(table_name) from information_schema.tables where table_schema = database()";
+		List<String> tables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
+		return tables;
+	}
+
 	public static Map<String, TableMetadata> getTableMetadata(ExportContext context) {
 		final Map<String, TableMetadata> ret = new LinkedHashMap<String, TableMetadata>();
 
 		// Get all of the tables
-		String allTableQuery = "select lower(table_name) from information_schema.tables where table_schema = database()";
-		List<String> tables = context.executeQuery(allTableQuery, new ColumnListHandler<String>());
-		for (String table : tables) {
+		for (String table : getAllTables(context)) {
 			ret.put(table, new TableMetadata(table));
 		}
-
-		// Retrieve all defined primary keys for each table
-		String primaryKeyQuery = "select lower(table_name), lower(column_name) from information_schema.key_column_usage where table_schema = database() and constraint_name = 'PRIMARY';";
-		context.executeQuery(primaryKeyQuery, new ResultSetHandler<Integer>() {
-			public Integer handle(ResultSet rs) throws SQLException {
-				int rowsHandled = 0;
-				while (rs.next()) {
-					TableMetadata tableMetadata = ret.get(rs.getString(1));
-					if (tableMetadata != null) {
-						tableMetadata.getPrimaryKeys().add(rs.getString(2));
-						rowsHandled++;
-					}
-				}
-				return rowsHandled;
-			}
-		});
 
 		// Retrieve the foreign key relationships for each column in each table
 		StringBuilder foreignKeyQuery = new StringBuilder();
@@ -119,44 +104,52 @@ public class DbUtil {
 		return query;
 	}
 
-	public static String findJoinQuery(String fromTable, String toTable, ExportContext context) {
-		return findJoinQuery(fromTable, toTable, new HashSet<String>(), context);
+	/**
+	 * @return the ordered join queries needed to go from "fromTable" to "toTable"
+	 * if there are certain joins you wish to disallow, for example if you don't want
+	 * any joins from the user table to the person table to be included, then you can
+	 * pass these in via the "patternsToIgnore" property in the format "user/person"
+	 */
+	public static List<String> getJoins(String fromTable, String toTable, Set<String> patternsToIgnore, ExportContext context) {
+		return getJoins(fromTable, toTable, patternsToIgnore, new HashSet<String>(), context);
 	}
 
-	private static String findJoinQuery(String fromTable, String toTable, Set<String> checkedTables, ExportContext context) {
-		List<String> columnsToIgnore = Arrays.asList("creator", "created_by", "changed_by", "retired_by", "voided_by");
+	private static List<String> getJoins(String fromTable, String toTable, Set<String> patternsToIgnore, Set<String> checkedTables, ExportContext context) {
 		ListMap<String, String> fkMap = context.getTableMetadata(toTable).getForeignKeyMap();
 		for (String toColumn : fkMap.keySet()) {
 			for (String foreignKey : fkMap.get(toColumn)) {
+
 				String[] fkTabCol = foreignKey.split("\\.");
-				if (!columnsToIgnore.contains(fkTabCol[1])) {
-					if (!checkedTables.contains(foreignKey)) {
-						checkedTables.add(foreignKey);
+				if (!checkedTables.contains(foreignKey)) {
+					checkedTables.add(foreignKey);
+
+					boolean ignore = false;
+					if (patternsToIgnore != null && !patternsToIgnore.isEmpty()) {
+						for (String pattern : patternsToIgnore) {
+							String[] fromTo = pattern.split("\\/");
+							ignore = ignore || (Util.matchesPattern(fkTabCol[0], fromTo[0]) && Util.matchesPattern(toTable, fromTo[1]));
+						}
+					}
+
+					if (!ignore) {
 						String joinQuery = "inner join " + toTable + " on " + foreignKey + " = " + toTable + "." + toColumn;
 						if (foreignKey.startsWith(fromTable + ".")) {
-							return joinQuery;
+							List<String> joins = new ArrayList<String>();
+							joins.add(joinQuery);
+							return joins;
 						}
 						else {
-							String subQuery = findJoinQuery(fromTable, fkTabCol[0], checkedTables, context);
-							if (subQuery != null) {
-								return subQuery + " " + joinQuery;
+							List<String> joins = getJoins(fromTable, fkTabCol[0], patternsToIgnore, checkedTables, context);
+							if (!joins.isEmpty()) {
+								joins.add(joinQuery);
+								return joins;
 							}
 						}
 					}
 				}
 			}
 		}
-		return null;
-	}
-
-	public static void executeUpdate(String query, ExportContext context) {
-		QueryRunner qr = new QueryRunner();
-		try {
-			qr.update(context.getConnection(), query);
-		}
-		catch (SQLException e) {
-			throw new RuntimeException("Unable to execute query: " + query, e);
-		}
+		return new ArrayList<String>();
 	}
 
 	public static void closeConnection(Connection connection) {

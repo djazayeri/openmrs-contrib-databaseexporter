@@ -18,6 +18,7 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableConfig;
 import org.openmrs.contrib.databaseexporter.TableMetadata;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,11 +52,11 @@ public class TableFilter {
 		for (String tableName : tableMetadataMap.keySet()) {
 			TableConfig config = new TableConfig(tableMetadataMap.get(tableName));
 
-			boolean exportSchema = getIncludeSchema().isEmpty() || isInList(tableName, getIncludeSchema());
-			exportSchema = exportSchema && !isInList(tableName, getExcludeSchema());
+			boolean exportSchema = getIncludeSchema().isEmpty() || Util.matchesAnyPattern(tableName, getIncludeSchema());
+			exportSchema = exportSchema && !Util.matchesAnyPattern(tableName, getExcludeSchema());
 
-			boolean exportData = getIncludeData().isEmpty() || isInList(tableName, getIncludeData());
-			exportData = exportData && !isInList(tableName, getExcludeData());
+			boolean exportData = getIncludeData().isEmpty() || Util.matchesAnyPattern(tableName, getIncludeData());
+			exportData = exportData && !Util.matchesAnyPattern(tableName, getExcludeData());
 
 			config.setExportSchema(exportSchema);
 			config.setExportData(exportData);
@@ -63,17 +64,6 @@ public class TableFilter {
 			tablesToDump.put(tableName, config);
 		}
 		return tablesToDump;
-	}
-
-	protected boolean isInList(String tableName, List<String> expressions) {
-		if (expressions != null) {
-			for (String t : expressions) {
-				if (tableName.equalsIgnoreCase(t) || (t.endsWith("*") && tableName.startsWith(t.substring(0, t.length()-1)))) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	//***** ACCESSORS *****

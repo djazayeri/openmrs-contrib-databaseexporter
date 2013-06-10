@@ -13,9 +13,7 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.QueryBuilder;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
@@ -33,8 +31,8 @@ public class ForeignKeyTransform extends RowTransform {
 
 	private String referencedTable; // The table to check for missing references
 	private String referencedColumn; // The column to check for missing references
+	private List<Object> validValues; // The values to use as valid replacements
 	private boolean onlyReplaceIfInvalid = true; // Whether to replace a row with a new value only if the current value no longer exists
-	private List<String> foreignKeysToRemove; // Any table.column combinations that should be removed rather than replaced, if invalid
 
 	//***** INSTANCE METHODS *****
 
@@ -54,14 +52,13 @@ public class ForeignKeyTransform extends RowTransform {
 		for (String columnName : row.getColumns()) {
 			String tabCol = row.getTableName() + "." + columnName;
 			if (fks.contains(tabCol)) {
-				List<Object> replacements = getForeignKeyData(context);
-				if (replacements.isEmpty() || getForeignKeysToRemove().contains(tabCol)) {
+				if (getValidValues().isEmpty()) {
 					return false;
 				}
 				else {
-					boolean isStillValid = replacements.contains(row.getRawValue(columnName));
+					boolean isStillValid = getValidValues().contains(row.getRawValue(columnName));
 					if (!isOnlyReplaceIfInvalid() || !isStillValid) {
-						row.setRawValue(columnName, Util.getRandomElementFromList(replacements));
+						row.setRawValue(columnName, Util.getRandomElementFromList(getValidValues()));
 					}
 				}
 			}
@@ -77,17 +74,6 @@ public class ForeignKeyTransform extends RowTransform {
 			foreignKeys = context.getTableMetadata(getReferencedTable()).getForeignKeys(getReferencedColumn());
 		}
 		return foreignKeys;
-	}
-
-	List<Object> foreignKeyData;
-	public List<Object> getForeignKeyData(ExportContext context) {
-		if (foreignKeyData == null) {
-			QueryBuilder qb = new QueryBuilder();
-			String query = qb.buildQuery(getReferencedTable(), context);
-			query = query.replace("*", getReferencedColumn());
-			foreignKeyData = context.executeQuery(query, new ColumnListHandler<Object>());
-		}
-		return foreignKeyData;
 	}
 
 	//***** PROPERTY ACCESS *****
@@ -108,15 +94,19 @@ public class ForeignKeyTransform extends RowTransform {
 		this.referencedTable = referencedTable;
 	}
 
-	public List<String> getForeignKeysToRemove() {
-		if (foreignKeysToRemove == null) {
-			foreignKeysToRemove = new ArrayList<String>();
+	public List<Object> getValidValues() {
+		if (validValues == null) {
+			validValues = new ArrayList<Object>();
 		}
-		return foreignKeysToRemove;
+		return validValues;
 	}
 
-	public void setForeignKeysToRemove(List<String> foreignKeysToRemove) {
-		this.foreignKeysToRemove = foreignKeysToRemove;
+	public void addValidValue(Object value) {
+		getValidValues().add(value);
+	}
+
+	public void setValidValues(List<Object> validValues) {
+		this.validValues = validValues;
 	}
 
 	public boolean isOnlyReplaceIfInvalid() {
