@@ -93,39 +93,41 @@ public class ExportContext {
 		}
 	}
 
-	public String registerInTemporaryTable(String sourceTable, String sourceColumn, final Collection<Integer> ids) {
-
-		String tableAndColumn = sourceTable + "." + sourceColumn;
-		String tempTableName = temporaryTableSet.get(tableAndColumn);
-		if (tempTableName == null) {
-			tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
-			log("Preparing temporary table " + tempTableName);
-			executeUpdate("create temporary table " + tempTableName + " (id integer not null primary key)");
-			temporaryTableSet.put(tableAndColumn, tempTableName);
-		}
-
-		if (ids != null && !ids.isEmpty()) {
-
+	public void registerInTemporaryTable(String sourceTable, String sourceColumn, final Collection<Integer> ids) {
+		if (ids != null) {
 			Set<Integer> toInsert = new HashSet<Integer>(ids);
-			toInsert.removeAll(executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>()));
-
+			toInsert.remove(null);
 			if (!toInsert.isEmpty()) {
-				log("Adding " + toInsert.size() + " values");
-				StringBuilder insert = new StringBuilder("insert into " + tempTableName + " (id) values ");
-				for (Iterator<Integer> i = toInsert.iterator(); i.hasNext();) {
-					Integer id = i.next();
-					if (id != null) {
-						insert.append("(").append(id).append(")");
-						if (i.hasNext()) {
-							insert.append(",");
+
+				String tableAndColumn = sourceTable + "." + sourceColumn;
+				String tempTableName = temporaryTableSet.get(tableAndColumn);
+				if (tempTableName == null) {
+					tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
+					log("Preparing temporary table " + tempTableName);
+					executeUpdate("create temporary table " + tempTableName + " (id integer not null primary key)");
+					temporaryTableSet.put(tableAndColumn, tempTableName);
+				}
+
+
+				toInsert.removeAll(executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>()));
+
+
+				if (!toInsert.isEmpty()) {
+					log("Adding " + toInsert.size() + " values");
+					StringBuilder insert = new StringBuilder("insert into " + tempTableName + " (id) values ");
+					for (Iterator<Integer> i = toInsert.iterator(); i.hasNext();) {
+						Integer id = i.next();
+						if (id != null) {
+							insert.append("(").append(id).append(")");
+							if (i.hasNext()) {
+								insert.append(",");
+							}
 						}
 					}
+					executeUpdate(insert.toString());
 				}
-				executeUpdate(insert.toString());
 			}
 		}
-
-		return tempTableName;
 	}
 
 	public String getTemporaryTableName(String tableName, String columnName) {

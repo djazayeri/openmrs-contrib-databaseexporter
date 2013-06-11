@@ -36,11 +36,11 @@ public abstract class RowFilter {
 		for (String column : ids.keySet()) {
 			context.registerInTemporaryTable(getTableName(), column, ids.get(column));
 		}
-		getDependencyFilter(context).filter(context);
-	}
-
-	public DependencyFilter getDependencyFilter(ExportContext context) {
-		return context.getConfiguration().getDependencyFilters().get(getTableName());
+		DependencyFilter df = context.getConfiguration().getDependencyFilters().get(getTableName());
+		if (df == null) {
+			throw new RuntimeException("You must specify a dependency filter for any tables that you are applying row filters to");
+		}
+		df.filter(context);
 	}
 
 	public String toString() {
