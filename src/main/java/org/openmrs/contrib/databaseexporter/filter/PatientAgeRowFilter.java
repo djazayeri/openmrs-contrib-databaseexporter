@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter.query;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientAgeFilterQuery extends FilterQuery {
+public class PatientAgeRowFilter extends PatientFilter {
 
 	//***** PROPERTIES *****
 
@@ -34,12 +34,12 @@ public class PatientAgeFilterQuery extends FilterQuery {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientAgeFilterQuery() {}
+	public PatientAgeRowFilter() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getIds(ExportContext context) {
+	public Set<Integer> getPatientIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 		for (AgeRange ar : getAgeRanges()) {
 			StringBuilder q = new StringBuilder();

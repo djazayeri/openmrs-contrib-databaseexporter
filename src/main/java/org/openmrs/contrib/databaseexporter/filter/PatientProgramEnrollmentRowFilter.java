@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter.query;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more program enrollments of each type
  */
-public class PatientProgramEnrollmentFilterQuery extends FilterQuery {
+public class PatientProgramEnrollmentRowFilter extends PatientFilter {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_ENCOUNTERS_DESC
@@ -40,12 +40,12 @@ public class PatientProgramEnrollmentFilterQuery extends FilterQuery {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientProgramEnrollmentFilterQuery() {}
+	public PatientProgramEnrollmentRowFilter() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getIds(ExportContext context) {
+	public Set<Integer> getPatientIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToPrograms == null || limitToPrograms.isEmpty()) {

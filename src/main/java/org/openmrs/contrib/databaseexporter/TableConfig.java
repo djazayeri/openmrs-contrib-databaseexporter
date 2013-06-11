@@ -23,8 +23,6 @@ public class TableConfig {
 	private TableMetadata tableMetadata;
 	private boolean exportSchema = true;
 	private boolean exportData = true;
-	private String temporaryTableName;
-	private String primaryKeyName;
 
 	//***** CONSTRUCTORS *****
 
@@ -56,21 +54,5 @@ public class TableConfig {
 
 	public void setExportData(boolean exportData) {
 		this.exportData = exportData;
-	}
-
-	public String getTemporaryTableName() {
-		return temporaryTableName;
-	}
-
-	public void setTemporaryTableName(String temporaryTableName) {
-		this.temporaryTableName = temporaryTableName;
-	}
-
-	public String getPrimaryKeyName() {
-		return primaryKeyName;
-	}
-
-	public void setPrimaryKeyName(String primaryKeyName) {
-		this.primaryKeyName = primaryKeyName;
 	}
 }

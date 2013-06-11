@@ -21,9 +21,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +69,13 @@ public class Util {
 		return null;
 	}
 
+	public static <T> T nvl(T o, T valueIfNull) {
+		if (isEmpty(o)) {
+			return valueIfNull;
+		}
+		return o;
+	}
+
 	public static String nvlStr(Object o, String valueIfNull) {
 		if (isEmpty(o)) {
 			return valueIfNull;
@@ -79,6 +88,11 @@ public class Util {
 			return true;
 		}
 		return nvlStr(o1, "").equals(nvlStr(o2, ""));
+	}
+
+	public static String formatDate(Date d, String format) {
+		SimpleDateFormat df = new SimpleDateFormat(format);
+		return df.format(d);
 	}
 
 	public static String loadResource(String path) {

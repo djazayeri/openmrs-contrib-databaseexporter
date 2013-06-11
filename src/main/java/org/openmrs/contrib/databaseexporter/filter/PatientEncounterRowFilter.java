@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter.query;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more encounters of each type
  */
-public class PatientEncounterFilterQuery extends FilterQuery {
+public class PatientEncounterRowFilter extends PatientFilter {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_OBS_DESC
@@ -41,12 +41,12 @@ public class PatientEncounterFilterQuery extends FilterQuery {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientEncounterFilterQuery() {}
+	public PatientEncounterRowFilter() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getIds(ExportContext context) {
+	public Set<Integer> getPatientIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {

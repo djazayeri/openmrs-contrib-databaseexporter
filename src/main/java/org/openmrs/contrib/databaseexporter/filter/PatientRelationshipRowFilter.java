@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter.query;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Returns a particular number of patients that have one or more identifiers of each type
+ * Returns a particular number of patients that have one or more relationships of each type
  */
-public class PatientIdentifierFilterQuery extends FilterQuery {
+public class PatientRelationshipRowFilter extends PatientFilter {
 
 	public enum ORDER {
 		RANDOM
@@ -34,36 +34,44 @@ public class PatientIdentifierFilterQuery extends FilterQuery {
 
 	private Integer numberPerType = 10; // Default to 10
 	private boolean includeRetired = false; // Default to false
-	private List<Integer> limitToTypes; // optional. if null or empty will include all identifier types
+	private List<Integer> limitToTypes; // optional. if null or empty will include all relationship types
 	private ORDER order = ORDER.RANDOM;
 
 	//***** CONSTRUCTORS *****
 
-	public PatientIdentifierFilterQuery() {}
+	public PatientRelationshipRowFilter() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getIds(ExportContext context) {
+	public Set<Integer> getPatientIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {
-			String q = "select patient_identifier_type_id from patient_identifier_type" + (includeRetired ? "" : " where retired = 0");
+			String q = "select relationship_type_id from relationship_type" + (includeRetired ? "" : " where retired = 0");
 			limitToTypes = context.executeQuery(q, new ColumnListHandler<Integer>());
 		}
 
-		for (Integer idTypeId : limitToTypes) {
-			StringBuilder q = new StringBuilder();
-			q.append("select 	distinct p.patient_id ");
-			q.append("from 		patient p, patient_identifier i ");
-			q.append("where 	p.patient_id = i.patient_id ");
-			q.append("and		i.identifier_type = ").append(idTypeId).append(" ");
-			q.append("and		p.voided = 0 and i.voided = 0 ");
-			q.append("order by	rand() limit ").append(numberPerType);
-			ret.addAll(context.executeQuery(q.toString(), new ColumnListHandler<Integer>()));
+		for (Integer relTypeId : limitToTypes) {
+			String personA = createQuery(relTypeId, "person_a", numberPerType, order);
+			ret.addAll(context.executeQuery(personA, new ColumnListHandler<Integer>()));
+
+			String personB = createQuery(relTypeId, "person_b", numberPerType, order);
+			ret.addAll(context.executeQuery(personB, new ColumnListHandler<Integer>()));
 		}
 
 		return ret;
+	}
+
+	protected String createQuery(Integer relTypeId, String sideOfRelationship, Integer num, ORDER order) {
+		StringBuilder q = new StringBuilder();
+		q.append("select 	distinct p.patient_id ");
+		q.append("from 		patient p, relationship r ");
+		q.append("where 	p.patient_id = r.").append(sideOfRelationship).append(" ");
+		q.append("and		r.relationship = ").append(relTypeId).append(" ");
+		q.append("and		p.voided = 0 and r.voided = 0 ");
+		q.append("order by	rand() limit ").append(num);
+		return q.toString();
 	}
 
 	//****** PROPERTY ACCESS *****

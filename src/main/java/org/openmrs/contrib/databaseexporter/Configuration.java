@@ -14,31 +14,44 @@
 package org.openmrs.contrib.databaseexporter;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.filter.TableFilter;
+import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Configuration {
 
 	//***** PROPERTIES *****
 
 	private DatabaseCredentials sourceDatabaseCredentials;
-	private String targetLocation;
+	private String targetDirectory;
 	private Integer batchSize = 10000;
 
 	private TableFilter tableFilter;
 	private List<RowFilter> rowFilters;
 	private List<RowTransform> rowTransforms;
+	private Map<String, DependencyFilter> dependencyFilters;
 
 	//***** CONSTRUCTORS *****
 
 	public Configuration() {}
 
+	public static Configuration getDefaultConfiguration() {
+		return loadFromResource("org/openmrs/contrib/databaseexporter/defaultConfiguration.json");
+	}
+
+	public static Configuration loadFromResource(String resource) {
+		String json = Util.loadResource(resource);
+		return loadFromJson(json);
+	}
+
 	public static Configuration loadFromJson(String json) {
-		Configuration config = new Configuration();
+		Configuration config;
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			config = mapper.readValue(json, Configuration.class);
@@ -49,14 +62,35 @@ public class Configuration {
 		return config;
 	}
 
-	//***** PROPERTY ACCESS *****
-
-	public String getTargetLocation() {
-		return targetLocation;
+	public void merge(Configuration config) {
+		if (config.getSourceDatabaseCredentials() != null) {
+			setSourceDatabaseCredentials(config.getSourceDatabaseCredentials());
+		}
+		if (config.getTargetDirectory() != null) {
+			setTargetDirectory(config.getTargetDirectory());
+		}
+		if (config.getTableFilter() != null) {
+			setTableFilter(config.getTableFilter());
+		}
+		if (config.getRowFilters().size() > 0) {
+			setRowFilters(config.getRowFilters());
+		}
+		if (config.getRowTransforms().size() > 0) {
+			setRowTransforms(config.getRowTransforms());
+		}
+		if (config.getDependencyFilters().size() > 0) {
+			setDependencyFilters(config.getDependencyFilters());
+		}
 	}
 
-	public void setTargetLocation(String targetLocation) {
-		this.targetLocation = targetLocation;
+	//***** PROPERTY ACCESS *****
+
+	public String getTargetDirectory() {
+		return targetDirectory;
+	}
+
+	public void setTargetDirectory(String targetDirectory) {
+		this.targetDirectory = targetDirectory;
 	}
 
 	public Integer getBatchSize() {
@@ -109,5 +143,16 @@ public class Configuration {
 
 	public void setRowTransforms(List<RowTransform> rowTransforms) {
 		this.rowTransforms = rowTransforms;
+	}
+
+	public Map<String, DependencyFilter> getDependencyFilters() {
+		if (dependencyFilters == null) {
+			dependencyFilters = new HashMap<String, DependencyFilter>();
+		}
+		return dependencyFilters;
+	}
+
+	public void setDependencyFilters(Map<String, DependencyFilter> dependencyFilters) {
+		this.dependencyFilters = dependencyFilters;
 	}
 }

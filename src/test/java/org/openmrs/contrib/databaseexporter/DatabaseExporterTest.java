@@ -23,12 +23,7 @@ public class DatabaseExporterTest {
 
 	@Test
 	public void shouldTest() throws Exception {
-
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream("org/openmrs/contrib/databaseexporter/configuration.json");
-		String json = IOUtils.toString(is);
-		Configuration config = Configuration.loadFromJson(json);
-
-		DatabaseExporter.export(config);
+		DatabaseExporter.main(new String[]{"org/openmrs/contrib/databaseexporter/test.json"});
 	}
 }
 

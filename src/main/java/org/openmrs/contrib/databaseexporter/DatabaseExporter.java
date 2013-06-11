@@ -33,36 +33,28 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class DatabaseExporter {
 
 	public DatabaseExporter() { }
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// For now, we simply support the specification of a file path on the command line for the configuration file
 		if (args.length == 0) {
 			System.out.println("You must specify a single argument, which is the path to the configuration file.");
 			return;
 		}
-		File f = new File(args[0]);
-		if (!f.exists()) {
-			System.out.println("The configuration file path specified is not valid.");
-			return;
-		}
-		try {
-			String json = FileUtils.readFileToString(f);
-			Configuration config = Configuration.loadFromJson(json);
-			export(config);
-		}
-		catch (IOException ioe) {
-			System.out.println("There was an error reading configuration file");
-			ioe.printStackTrace();
-		}
-		catch (Exception e) {
-			System.out.println("There is an error in your configuration syntax");
-			e.printStackTrace();
-		}
+		Configuration config = loadConfiguration(args[0]);
+		export(config);
+	}
+
+	public static Configuration loadConfiguration(String resource) {
+		Configuration config = Configuration.getDefaultConfiguration();
+		Configuration customConfig = Configuration.loadFromResource(resource);
+		config.merge(customConfig);
+		return config;
 	}
 
 	public static void export(final Configuration configuration) throws Exception {
@@ -72,7 +64,14 @@ public class DatabaseExporter {
 		try {
 			connection = DbUtil.openConnection(configuration.getSourceDatabaseCredentials());
 
-			fos = new FileOutputStream(configuration.getTargetLocation());
+			String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
+			String dir = configuration.getTargetDirectory();
+			if (Util.isEmpty(dir)) {
+				dir = System.getProperty("user.dir");
+			}
+			File outputFile = new File(dir, "export_"+ fileSuffix + ".sql");
+
+			fos = new FileOutputStream(outputFile);
 			OutputStreamWriter osWriter = new OutputStreamWriter(fos, "UTF-8");
 			PrintWriter out = new PrintWriter(osWriter);
 
@@ -84,7 +83,7 @@ public class DatabaseExporter {
 			try {
 				for (RowFilter filter : configuration.getRowFilters()) {
 					context.log("Applying filter: " + filter.getClass().getSimpleName());
-					filter.applyFilters(context);
+					filter.filter(context);
 				}
 
 				for (final String table : context.getTableData().keySet()) {
@@ -191,6 +190,10 @@ public class DatabaseExporter {
 						DbUtil.writeTableExportFooter(table, context);
 					}
 				}
+			}
+			catch (Exception e) {
+				context.log("An error occurred during export: " + e.getMessage());
+				e.printStackTrace(System.out);
 			}
 			finally {
 				context.log("Cleaning up temporary tables");

@@ -11,59 +11,67 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter.query;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.TableConfig;
+import org.openmrs.contrib.databaseexporter.util.ListMap;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Return the ids represented by the union of all of the passed query results
  */
-public class SqlFilterQuery extends FilterQuery {
+public class SqlRowFilter extends RowFilter {
 
 	//***** PROPERTIES *****
 
+	private String tableName;
+	private String columnName;
 	private Set<String> sqlQueries;
 
 	//***** CONSTRUCTORS *****
 
-	public SqlFilterQuery() {}
+	public SqlRowFilter() {}
 
-	public SqlFilterQuery(Collection<String> queries) {
+	public SqlRowFilter(Collection<String> queries) {
 		getSqlQueries().addAll(queries);
 	}
 
-	public SqlFilterQuery(String query) {
+	public SqlRowFilter(String query) {
 		getSqlQueries().add(query);
 	}
 
 	//***** INSTANCE METHODS *****
 
 	@Override
-	public Set<Integer> getIds(ExportContext context) {
-		Set<Integer> ret = new HashSet<Integer>();
+	public ListMap<String, Integer> getIds(ExportContext context) {
+		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		for (String sql : getSqlQueries()) {
-			for (String table : context.getTableData().keySet()) {
-				TableConfig tableConfig = context.getTableData().get(table);
-				String tn = tableConfig.getTableMetadata().getTableName();
-				if (tableConfig.getTemporaryTableName() != null) {
-					sql = sql.replace(" " + tn + " ", " " + tableConfig.getTemporaryTableName() + " ");
-					sql = sql.replace(" " + tn + "." + tableConfig.getPrimaryKeyName(), " " + tableConfig.getTemporaryTableName() + "." + tableConfig.getPrimaryKeyName());
-				}
-			}
-			ret.addAll(context.executeQuery(sql, new ColumnListHandler<Integer>()));
+			ret.putAll(getColumnName(), context.executeQuery(sql, new ColumnListHandler<Integer>()));
 		}
 		return ret;
 	}
 
 	//***** ACCESSOR *****
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
+	}
 
 	public Set<String> getSqlQueries() {
 		if (sqlQueries == null) {

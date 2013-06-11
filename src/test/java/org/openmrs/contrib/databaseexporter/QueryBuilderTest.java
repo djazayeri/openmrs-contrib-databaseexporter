@@ -13,16 +13,11 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
-import org.openmrs.contrib.databaseexporter.filter.query.IdFilterQuery;
-import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.filter.IdRowFilter;
 import org.openmrs.contrib.databaseexporter.filter.TableFilter;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -34,9 +29,9 @@ import java.util.Set;
 public class QueryBuilderTest {
 
 	private Configuration getConfiguration() {
-		Configuration c = new Configuration();
+		Configuration c = Configuration.getDefaultConfiguration();
 		c.setSourceDatabaseCredentials(new DatabaseCredentials("jdbc:mysql://localhost:3306/openmrs_rwink?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8", "root", "root"));
-		c.setTargetLocation("/home/mseaton/Desktop/QueryBuilderTest.sql");
+		c.setTargetDirectory("/home/mseaton/Desktop");
 
 		TableFilter tableFilter = new TableFilter();
 		List<String> tablesToInclude = Arrays.asList("patient", "person", "patient_identifier");
@@ -44,11 +39,10 @@ public class QueryBuilderTest {
 		tableFilter.getIncludeData().addAll(tablesToInclude);
 		c.setTableFilter(tableFilter);
 
-		PatientFilter patientFilter = new PatientFilter();
-		IdFilterQuery idQuery = new IdFilterQuery();
-		idQuery.addIds(82494,81712);
-		patientFilter.addFilterQuery(idQuery);
-		c.getRowFilters().add(patientFilter);
+		IdRowFilter idFilter = new IdRowFilter();
+		idFilter.setTableName("patient");
+		idFilter.addIds("patient_id", 82494,81712);
+		c.getRowFilters().add(idFilter);
 
 		return c;
 	}
