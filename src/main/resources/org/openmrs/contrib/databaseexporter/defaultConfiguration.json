@@ -48,7 +48,24 @@
 				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
 				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
 				{"tableName": "relationship", "idColumns": ["person_a"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
-				{"tableName": "relationship", "idColumns": ["person_b"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"}
+				{"tableName": "relationship", "idColumns": ["person_b"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
+				{"tableName": "users", "idColumns": ["user_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
+			],
+			"dependencies": [
+				{"tableName": "patient", "dependencies": []},
+				{"tableName": "person", "dependencies": []},
+				{"tableName": "users", "dependencies": []}
+			]
+		},
+		"users": {
+			"tableName": "users",
+			"idColumns": ["user_id"],
+			"subQueries": [
+				{"tableName": "user_property", "idColumns": ["user_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
+				{"tableName": "user_role", "idColumns": ["user_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
+				{"tableName": "notification_alert_recipient", "idColumns": ["alert_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
+				{"tableName": "usagestatistics_daily", "idColumns": ["user_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
+				{"tableName": "usagestatistics_usage", "idColumns": ["usage_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"}
 			],
 			"dependencies": [
 				{"tableName": "person", "dependencies": []}
