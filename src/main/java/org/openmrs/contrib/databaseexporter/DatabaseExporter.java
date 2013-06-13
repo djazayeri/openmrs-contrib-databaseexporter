@@ -61,6 +61,12 @@ public class DatabaseExporter {
 		try {
 			connection = DbUtil.openConnection(configuration.getSourceDatabaseCredentials());
 
+			if (configuration.getTargetDirectory() != null) {
+				File f = new File(configuration.getTargetDirectory());
+				if (!f.exists()) {
+					f.mkdirs();
+				}
+			}
 			File outputFile = configuration.getOutputFile();
 
 			fos = new FileOutputStream(outputFile);
