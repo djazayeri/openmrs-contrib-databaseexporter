@@ -11,13 +11,12 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter;
+package org.openmrs.contrib.databaseexporter.filter;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Defines how to handle dependencies of filtered objects
@@ -28,7 +27,7 @@ public class DependencyFilter {
 
 	private String tableName;
 	private List<String> idColumns;
-	private List<SubQuery> subQueries;
+	private List<DependencyFilterQuery> subQueries;
 	private List<DependencyFilter> dependencies;
 
 	//***** CONSTRUCTORS *****
@@ -39,7 +38,7 @@ public class DependencyFilter {
 
 	public void filter(ExportContext context) {
 		if (getSubQueries() != null) {
-			for (SubQuery q : getSubQueries()) {
+			for (DependencyFilterQuery q : getSubQueries()) {
 				if (context.getTableMetadata(q.getTableName()) != null) {
 					for (String idCol : q.getIdColumns()) {
 						StringBuilder sql = new StringBuilder();
@@ -47,18 +46,21 @@ public class DependencyFilter {
 						sql.append(" from ").append(q.getTableName());
 
 						String joinTable = context.getTemporaryTableName(q.getJoinTable(), q.getParentColumn());
+						String joinTableColumn = "id";
 						if (joinTable == null) {
-							sql.append(" inner join ").append(q.getJoinTable());
-							sql.append(" on ").append(q.getTableName()).append(".").append(q.getChildColumn());
-							sql.append(" = ").append(q.getJoinTable()).append(".").append(q.getParentColumn());
+							joinTable = q.getJoinTable();
+							joinTableColumn = q.getParentColumn();
+						}
+
+						if (q.getTableName().equals(joinTable) && idCol.equals(joinTableColumn)) {
+							context.log("Skipping joining " + q.getTableName() + "." + idCol + " against itself");
 						}
 						else {
 							sql.append(" inner join ").append(joinTable);
 							sql.append(" on ").append(q.getTableName()).append(".").append(q.getChildColumn());
-							sql.append(" = ").append(joinTable).append(".id");
+							sql.append(" = ").append(joinTable).append(".").append(joinTableColumn);
 						}
-						List<Integer> ids = context.executeQuery(sql.toString(), new ColumnListHandler<Integer>());
-						context.registerInTemporaryTable(q.getTableName(), idCol, ids);
+						context.registerInTemporaryTable(q.getTableName(), idCol, context.executeIdQuery(sql.toString()));
 					}
 				}
 				else {
@@ -110,11 +112,11 @@ public class DependencyFilter {
 		this.idColumns = idColumns;
 	}
 
-	public List<SubQuery> getSubQueries() {
+	public List<DependencyFilterQuery> getSubQueries() {
 		return subQueries;
 	}
 
-	public void setSubQueries(List<SubQuery> subQueries) {
+	public void setSubQueries(List<DependencyFilterQuery> subQueries) {
 		this.subQueries = subQueries;
 	}
 

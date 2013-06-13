@@ -11,56 +11,49 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.util.ListMap;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Filter given a fixed set of ids
  */
-public class IdRowFilter extends RowFilter {
+public class PatientIdQuery extends PatientQuery {
 
 	//***** PROPERTIES *****
 
-	private String tableName;
-	private ListMap<String, Integer> ids;
+	private Set<Integer> ids;
 
 	//***** CONSTRUCTORS *****
 
-	public IdRowFilter() {}
+	public PatientIdQuery() {}
 
 	//***** INSTANCE METHODS *****
 
 	@Override
-	public ListMap<String, Integer> getIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		return getIds();
 	}
 
-	public void addIds(String columnName, Integer... ids) {
+	public void addIds(Integer... ids) {
 		for (Integer id : ids) {
-			getIds().putInList(columnName, id);
+			getIds().add(id);
 		}
 	}
 
 	//***** PROPERTY ACCESS *****
 
-	public String getTableName() {
-		return tableName;
-	}
-
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
-	}
-
-	public ListMap<String, Integer> getIds() {
+	public Set<Integer> getIds() {
 		if (ids == null) {
-			ids = new ListMap<String, Integer>();
+			ids = new HashSet<Integer>();
 		}
 		return ids;
 	}
 
-	public void setIds(ListMap<String, Integer> ids) {
+	public void setIds(Set<Integer> ids) {
 		this.ids = ids;
 	}
 }

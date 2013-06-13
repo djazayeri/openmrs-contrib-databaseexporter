@@ -15,9 +15,7 @@ package org.openmrs.contrib.databaseexporter.transform;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
-import org.openmrs.contrib.databaseexporter.util.Util;
 
-import java.util.List;
 import java.util.Map;
 
 /**

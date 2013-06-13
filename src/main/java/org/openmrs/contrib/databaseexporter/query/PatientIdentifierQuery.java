@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more identifiers of each type
  */
-public class PatientIdentifierRowFilter extends PatientFilter {
+public class PatientIdentifierQuery extends PatientQuery {
 
 	public enum ORDER {
 		RANDOM
@@ -34,22 +33,22 @@ public class PatientIdentifierRowFilter extends PatientFilter {
 
 	private Integer numberPerType = 10; // Default to 10
 	private boolean includeRetired = false; // Default to false
-	private List<Integer> limitToTypes; // optional. if null or empty will include all identifier types
+	private Set<Integer> limitToTypes; // optional. if null or empty will include all identifier types
 	private ORDER order = ORDER.RANDOM;
 
 	//***** CONSTRUCTORS *****
 
-	public PatientIdentifierRowFilter() {}
+	public PatientIdentifierQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {
 			String q = "select patient_identifier_type_id from patient_identifier_type" + (includeRetired ? "" : " where retired = 0");
-			limitToTypes = context.executeQuery(q, new ColumnListHandler<Integer>());
+			limitToTypes = context.executeIdQuery(q);
 		}
 
 		for (Integer idTypeId : limitToTypes) {
@@ -60,7 +59,7 @@ public class PatientIdentifierRowFilter extends PatientFilter {
 			q.append("and		i.identifier_type = ").append(idTypeId).append(" ");
 			q.append("and		p.voided = 0 and i.voided = 0 ");
 			q.append("order by	rand() limit ").append(numberPerType);
-			ret.addAll(context.executeQuery(q.toString(), new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(q.toString()));
 		}
 
 		return ret;
@@ -84,14 +83,14 @@ public class PatientIdentifierRowFilter extends PatientFilter {
 		this.includeRetired = includeRetired;
 	}
 
-	public List<Integer> getLimitToTypes() {
+	public Set<Integer> getLimitToTypes() {
 		if (limitToTypes == null) {
-			limitToTypes = new ArrayList<Integer>();
+			limitToTypes = new HashSet<Integer>();
 		}
 		return limitToTypes;
 	}
 
-	public void setLimitToTypes(List<Integer> limitToTypes) {
+	public void setLimitToTypes(Set<Integer> limitToTypes) {
 		this.limitToTypes = limitToTypes;
 	}
 

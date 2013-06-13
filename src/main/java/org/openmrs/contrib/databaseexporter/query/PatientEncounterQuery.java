@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more encounters of each type
  */
-public class PatientEncounterRowFilter extends PatientFilter {
+public class PatientEncounterQuery extends PatientQuery {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_OBS_DESC
@@ -35,37 +34,37 @@ public class PatientEncounterRowFilter extends PatientFilter {
 	private Integer numberPerType = 10; // Default to 10
 	private Integer numberPerForm = 10; // Default to 10
 	private boolean includeRetired = false; // Default to false
-	private List<Integer> limitToTypes; // optional. if null or empty will include all encounter types
-	private List<Integer> limitToForms; // optional, if null or empty will include all forms
+	private Set<Integer> limitToTypes; // optional. if null or empty will include all encounter types
+	private Set<Integer> limitToForms; // optional, if null or empty will include all forms
 	private ORDER order = ORDER.RANDOM;
 
 	//***** CONSTRUCTORS *****
 
-	public PatientEncounterRowFilter() {}
+	public PatientEncounterQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {
 			String q = "select encounter_type_id from encounter_type" + (includeRetired ? "" : " where retired = 0");
-			limitToTypes = context.executeQuery(q, new ColumnListHandler<Integer>());
+			limitToTypes = context.executeIdQuery(q);
 		}
 		if (limitToForms == null || limitToForms.isEmpty()) {
 			String q = "select form_id from form" + (includeRetired ? "" : " where retired = 0");
-			limitToForms = context.executeQuery(q, new ColumnListHandler<Integer>());
+			limitToForms = context.executeIdQuery(q);
 		}
 
 		for (Integer encTypeId : limitToTypes) {
 			String q = createQuery("encounter_type", encTypeId, numberPerType, order);
-			ret.addAll(context.executeQuery(q, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(q));
 		}
 
 		for (Integer formId : limitToForms) {
 			String q = createQuery("form_id", formId, numberPerForm, order);
-			ret.addAll(context.executeQuery(q, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(q));
 		}
 
 		return ret;
@@ -124,25 +123,25 @@ public class PatientEncounterRowFilter extends PatientFilter {
 		this.includeRetired = includeRetired;
 	}
 
-	public List<Integer> getLimitToTypes() {
+	public Set<Integer> getLimitToTypes() {
 		if (limitToTypes == null) {
-			limitToTypes = new ArrayList<Integer>();
+			limitToTypes = new HashSet<Integer>();
 		}
 		return limitToTypes;
 	}
 
-	public void setLimitToTypes(List<Integer> limitToTypes) {
+	public void setLimitToTypes(Set<Integer> limitToTypes) {
 		this.limitToTypes = limitToTypes;
 	}
 
-	public List<Integer> getLimitToForms() {
+	public Set<Integer> getLimitToForms() {
 		if (limitToForms == null) {
-			limitToForms = new ArrayList<Integer>();
+			limitToForms = new HashSet<Integer>();
 		}
 		return limitToForms;
 	}
 
-	public void setLimitToForms(List<Integer> limitToForms) {
+	public void setLimitToForms(Set<Integer> limitToForms) {
 		this.limitToForms = limitToForms;
 	}
 

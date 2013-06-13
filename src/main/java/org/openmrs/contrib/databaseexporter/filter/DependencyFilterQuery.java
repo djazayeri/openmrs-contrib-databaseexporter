@@ -11,14 +11,14 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter;
+package org.openmrs.contrib.databaseexporter.filter;
 
 import java.util.List;
 
 /**
  * Contains information about how to construct a subquery
  */
-public class SubQuery {
+public class DependencyFilterQuery {
 
 	//***** PROPERTIES *****
 
@@ -27,6 +27,18 @@ public class SubQuery {
 	private String joinTable;
 	private String childColumn;
 	private String parentColumn;
+
+	//***** CONSTRUCTORS *****
+
+	public DependencyFilterQuery() {}
+
+	public DependencyFilterQuery(String tableName, List<String> idColumns, String joinTable, String childColumn, String parentColumn) {
+		this.tableName = tableName;
+		this.idColumns = idColumns;
+		this.joinTable = joinTable;
+		this.childColumn = childColumn;
+		this.parentColumn = parentColumn;
+	}
 
 	//***** METHODS *****
 

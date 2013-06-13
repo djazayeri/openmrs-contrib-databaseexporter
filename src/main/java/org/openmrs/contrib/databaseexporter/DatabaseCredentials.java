@@ -13,8 +13,6 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 public class DatabaseCredentials {
 
 	//***** PROPERTIES *****

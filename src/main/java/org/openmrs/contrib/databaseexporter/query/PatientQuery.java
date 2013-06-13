@@ -11,20 +11,20 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.transform;
-
-import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.TableRow;
-
-import java.util.List;
+package org.openmrs.contrib.databaseexporter.query;
 
 /**
- * Represents a particular type of transform that can add new rows to the table, rather than altering existing rows
+ * Returns a set of ids for a particular table column
  */
-public interface TableTransform {
+public abstract class PatientQuery extends Query {
 
-	/**
-	 * @return the alternative table contents that this should output for this table
-	 */
-	public List<TableRow> getNewRows(String tableName, ExportContext context);
+	@Override
+	public String getTableName() {
+		return "patient";
+	}
+
+	@Override
+	public String getColumnName() {
+		return "patient_id";
+	}
 }

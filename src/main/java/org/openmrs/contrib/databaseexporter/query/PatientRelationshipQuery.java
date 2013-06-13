@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more relationships of each type
  */
-public class PatientRelationshipRowFilter extends PatientFilter {
+public class PatientRelationshipQuery extends PatientQuery {
 
 	public enum ORDER {
 		RANDOM
@@ -34,30 +33,30 @@ public class PatientRelationshipRowFilter extends PatientFilter {
 
 	private Integer numberPerType = 10; // Default to 10
 	private boolean includeRetired = false; // Default to false
-	private List<Integer> limitToTypes; // optional. if null or empty will include all relationship types
+	private Set<Integer> limitToTypes; // optional. if null or empty will include all relationship types
 	private ORDER order = ORDER.RANDOM;
 
 	//***** CONSTRUCTORS *****
 
-	public PatientRelationshipRowFilter() {}
+	public PatientRelationshipQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToTypes == null || limitToTypes.isEmpty()) {
 			String q = "select relationship_type_id from relationship_type" + (includeRetired ? "" : " where retired = 0");
-			limitToTypes = context.executeQuery(q, new ColumnListHandler<Integer>());
+			limitToTypes = context.executeIdQuery(q);
 		}
 
 		for (Integer relTypeId : limitToTypes) {
 			String personA = createQuery(relTypeId, "person_a", numberPerType, order);
-			ret.addAll(context.executeQuery(personA, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(personA));
 
 			String personB = createQuery(relTypeId, "person_b", numberPerType, order);
-			ret.addAll(context.executeQuery(personB, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(personB));
 		}
 
 		return ret;
@@ -92,14 +91,14 @@ public class PatientRelationshipRowFilter extends PatientFilter {
 		this.includeRetired = includeRetired;
 	}
 
-	public List<Integer> getLimitToTypes() {
+	public Set<Integer> getLimitToTypes() {
 		if (limitToTypes == null) {
-			limitToTypes = new ArrayList<Integer>();
+			limitToTypes = new HashSet<Integer>();
 		}
 		return limitToTypes;
 	}
 
-	public void setLimitToTypes(List<Integer> limitToTypes) {
+	public void setLimitToTypes(Set<Integer> limitToTypes) {
 		this.limitToTypes = limitToTypes;
 	}
 

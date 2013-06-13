@@ -17,10 +17,10 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.util.EventLog;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 
 public class ExportContext {
 
@@ -51,7 +50,7 @@ public class ExportContext {
 		this.configuration = configuration;
 		this.connection = connection;
 		this.writer = writer;
-		eventLog = new EventLog();
+		eventLog = new EventLog(configuration.getLogFile());
 		tableData = configuration.getTableFilter().getTablesForExport(this);
 	}
 
@@ -75,15 +74,29 @@ public class ExportContext {
 
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
 		try {
+			if (getConfiguration().isLogSql()) {
+				log("SQL: " + sql + (params != null && params.length > 0 ? " [" + Util.toString(params) + "]" : ""));
+			}
 			QueryRunner runner = new QueryRunner();
-			return runner.query(connection, sql, handler, params);
+			T result =  runner.query(connection, sql, handler, params);
+			if (getConfiguration().isLogSql()) {
+				log("RESULT: " + result);
+			}
+			return result;
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Unable to execute query: " + sql, e);
 		}
 	}
 
+	public Set<Integer> executeIdQuery(String sql) {
+		return new HashSet<Integer>(executeQuery(sql, new ColumnListHandler<Integer>()));
+	}
+
 	public void executeUpdate(String query) {
+		if (getConfiguration().isLogSql()) {
+			log("UPDATE: " + query);
+		}
 		QueryRunner qr = new QueryRunner();
 		try {
 			qr.update(connection, query);
@@ -109,7 +122,7 @@ public class ExportContext {
 				}
 
 
-				toInsert.removeAll(executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>()));
+				toInsert.removeAll(executeIdQuery("select id from " + tempTableName));
 
 
 				if (!toInsert.isEmpty()) {
@@ -134,10 +147,15 @@ public class ExportContext {
 		return temporaryTableSet.get(tableName + "." + columnName);
 	}
 
+	public List<Integer> getTemporaryTableValues(String tableName, String columnName) {
+		String tempTableName = getTemporaryTableName(tableName, columnName);
+		return executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>());
+	}
+
 	public String buildQuery(String tableName, ExportContext context) {
 		TableConfig config = context.getTableData().get(tableName);
 
-		StringBuilder query = new StringBuilder("select * from " + tableName);
+		StringBuilder query = new StringBuilder("select ").append(tableName).append(".* from ").append(tableName);
 		for (String tempTable : temporaryTableSet.keySet()) {
 			String[] tableAndColumn = tempTable.split("\\.");
 			if (tableAndColumn[0].equals(tableName)) {

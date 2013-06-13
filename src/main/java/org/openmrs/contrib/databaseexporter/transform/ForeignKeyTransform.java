@@ -17,7 +17,6 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,8 +30,13 @@ public class ForeignKeyTransform extends RowTransform {
 
 	private String referencedTable; // The table to check for missing references
 	private String referencedColumn; // The column to check for missing references
-	private List<Object> validValues; // The values to use as valid replacements
-	private boolean onlyReplaceIfInvalid = true; // Whether to replace a row with a new value only if the current value no longer exists
+
+	//***** CONSTRUCTORS *****
+
+	public ForeignKeyTransform(String referencedTable, String referencedColumn) {
+		this.referencedTable = referencedTable;
+		this.referencedColumn = referencedColumn;
+	}
 
 	//***** INSTANCE METHODS *****
 
@@ -52,13 +56,11 @@ public class ForeignKeyTransform extends RowTransform {
 		for (String columnName : row.getColumns()) {
 			String tabCol = row.getTableName() + "." + columnName;
 			if (fks.contains(tabCol)) {
-				if (getValidValues().isEmpty()) {
-					return false;
-				}
-				else {
-					boolean isStillValid = getValidValues().contains(row.getRawValue(columnName));
-					if (!isOnlyReplaceIfInvalid() || !isStillValid) {
-						row.setRawValue(columnName, Util.getRandomElementFromList(getValidValues()));
+				List<Integer> validValues =  getValidValues(context);
+				if (validValues != null && !validValues.isEmpty()) {
+					if (!validValues.contains(row.getRawValue(columnName))) {
+						Object replacementValue = Util.getRandomElementFromList(validValues);
+						row.setRawValue(columnName, replacementValue);
 					}
 				}
 			}
@@ -74,6 +76,14 @@ public class ForeignKeyTransform extends RowTransform {
 			foreignKeys = context.getTableMetadata(getReferencedTable()).getForeignKeys(getReferencedColumn());
 		}
 		return foreignKeys;
+	}
+
+	private List<Integer> validValues;
+	private List<Integer> getValidValues(ExportContext context) {
+		if (validValues == null) {
+			validValues = context.getTemporaryTableValues(getReferencedTable(), getReferencedColumn());
+		}
+		return validValues;
 	}
 
 	//***** PROPERTY ACCESS *****
@@ -92,28 +102,5 @@ public class ForeignKeyTransform extends RowTransform {
 
 	public void setReferencedTable(String referencedTable) {
 		this.referencedTable = referencedTable;
-	}
-
-	public List<Object> getValidValues() {
-		if (validValues == null) {
-			validValues = new ArrayList<Object>();
-		}
-		return validValues;
-	}
-
-	public void addValidValue(Object value) {
-		getValidValues().add(value);
-	}
-
-	public void setValidValues(List<Object> validValues) {
-		this.validValues = validValues;
-	}
-
-	public boolean isOnlyReplaceIfInvalid() {
-		return onlyReplaceIfInvalid;
-	}
-
-	public void setOnlyReplaceIfInvalid(boolean onlyReplaceIfInvalid) {
-		this.onlyReplaceIfInvalid = onlyReplaceIfInvalid;
 	}
 }

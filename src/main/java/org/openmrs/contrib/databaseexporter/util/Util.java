@@ -34,14 +34,19 @@ public class Util {
 
 	public static String toString(Collection<?> c) {
 		StringBuilder ret = new StringBuilder();
-		for (Object o : c) {
-			ret.append(ret.length() == 0 ? "" : ",").append(o);
+		if (c != null) {
+			for (Object o : c) {
+				ret.append(ret.length() == 0 ? "" : ",").append(o);
+			}
 		}
 		return ret.toString();
 	}
 
 	public static String toString(Object[] c) {
-		return toString(Arrays.asList(c));
+		if (c != null) {
+			return toString(Arrays.asList(c));
+		}
+		return "";
 	}
 
 	public static List<String> toList(String s, String separator) {

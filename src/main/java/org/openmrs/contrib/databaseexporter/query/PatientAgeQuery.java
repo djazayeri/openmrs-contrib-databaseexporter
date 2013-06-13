@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.util.AgeRange;
 
@@ -25,7 +24,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientAgeRowFilter extends PatientFilter {
+public class PatientAgeQuery extends PatientQuery {
 
 	//***** PROPERTIES *****
 
@@ -34,12 +33,12 @@ public class PatientAgeRowFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientAgeRowFilter() {}
+	public PatientAgeQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 		for (AgeRange ar : getAgeRanges()) {
 			StringBuilder q = new StringBuilder();
@@ -52,7 +51,7 @@ public class PatientAgeRowFilter extends PatientFilter {
 				q.append(" AND datediff(CURRENT_DATE, n.birthdate)/365.25 <= " + ar.getMaxAge());
 			}
 			q.append(" order by rand() limit ").append(numberPerAgeRange);
-			ret.addAll(context.executeQuery(q.toString(), new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(q.toString()));
 		}
 		return ret;
 	}

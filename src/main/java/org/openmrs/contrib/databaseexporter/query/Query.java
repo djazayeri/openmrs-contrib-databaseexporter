@@ -11,28 +11,26 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.transform;
+package org.openmrs.contrib.databaseexporter.query;
 
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.TableRow;
+
+import java.util.Set;
 
 /**
- * Interface for a transform that can manipulate a row in one or more tables
+ * Returns a set of ids for a particular table column
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class RowTransform {
+public abstract class Query {
 
-	public abstract boolean canTransform(String tableName, ExportContext context);
+	public abstract String getTableName();
 
-	/**
-	 * Provides a mechanism for transforming the contents of a table row before writing it
-	 * Also provides an additional mechanism for excluding a row.  If a transform returns false,
-	 * this indicates to the export framework that the row should be excluded altogether
-	 */
-	public abstract boolean applyTransform(TableRow row, ExportContext context);
+	public abstract String getColumnName();
+
+	public abstract Set<Integer> getIds(ExportContext context);
 
 	public String toString() {
-		return getClass().getSimpleName();
+		return getClass() + ": " + getTableName() + "." + getColumnName() + " query";
 	}
 }

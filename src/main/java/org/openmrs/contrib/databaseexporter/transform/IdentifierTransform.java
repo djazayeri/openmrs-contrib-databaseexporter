@@ -13,16 +13,9 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Transforms patient identifier type and patient identifier

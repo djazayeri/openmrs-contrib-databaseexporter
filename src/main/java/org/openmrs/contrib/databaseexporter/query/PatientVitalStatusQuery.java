@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.HashSet;
@@ -22,7 +21,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientVitalStatusRowFilter extends PatientFilter {
+public class PatientVitalStatusQuery extends PatientQuery {
 
 	//***** PROPERTIES *****
 
@@ -31,12 +30,12 @@ public class PatientVitalStatusRowFilter extends PatientFilter {
 
 	//***** CONSTRUCTORS *****
 
-	public PatientVitalStatusRowFilter() {}
+	public PatientVitalStatusQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		StringBuilder aliveQuery = new StringBuilder();
@@ -44,14 +43,14 @@ public class PatientVitalStatusRowFilter extends PatientFilter {
 		aliveQuery.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id ");
 		aliveQuery.append("and	 n.dead = 0 ");
 		aliveQuery.append("order by rand() limit " + numberAlive);
-		ret.addAll(context.executeQuery(aliveQuery.toString(), new ColumnListHandler<Integer>()));
+		ret.addAll(context.executeIdQuery(aliveQuery.toString()));
 
 		StringBuilder deadQuery = new StringBuilder();
 		deadQuery.append("select p.patient_id from patient p, person n ");
 		deadQuery.append("where  p.voided = 0 and n.voided = 0 and p.patient_id = n.person_id ");
 		deadQuery.append("and	 n.dead = 1 ");
 		deadQuery.append("order by rand() limit " + numberDead);
-		ret.addAll(context.executeQuery(deadQuery.toString(), new ColumnListHandler<Integer>()));
+		ret.addAll(context.executeIdQuery(deadQuery.toString()));
 
 		return ret;
 	}

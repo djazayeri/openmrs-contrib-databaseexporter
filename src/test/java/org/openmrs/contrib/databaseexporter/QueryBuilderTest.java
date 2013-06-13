@@ -14,7 +14,8 @@
 package org.openmrs.contrib.databaseexporter;
 
 import org.junit.Test;
-import org.openmrs.contrib.databaseexporter.filter.IdRowFilter;
+import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
+import org.openmrs.contrib.databaseexporter.query.PatientIdQuery;
 import org.openmrs.contrib.databaseexporter.filter.TableFilter;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 
@@ -39,10 +40,11 @@ public class QueryBuilderTest {
 		tableFilter.getIncludeData().addAll(tablesToInclude);
 		c.setTableFilter(tableFilter);
 
-		IdRowFilter idFilter = new IdRowFilter();
-		idFilter.setTableName("patient");
-		idFilter.addIds("patient_id", 82494,81712);
-		c.getRowFilters().add(idFilter);
+		PatientFilter patientFilter = new PatientFilter();
+		PatientIdQuery idFilter = new PatientIdQuery();
+		idFilter.addIds(82494, 81712);
+		patientFilter.getQueries().add(idFilter);
+		c.getRowFilters().add(patientFilter);
 
 		return c;
 	}

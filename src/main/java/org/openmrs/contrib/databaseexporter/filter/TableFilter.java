@@ -13,7 +13,6 @@
  */
 package org.openmrs.contrib.databaseexporter.filter;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableConfig;
 import org.openmrs.contrib.databaseexporter.TableMetadata;
@@ -21,10 +20,8 @@ import org.openmrs.contrib.databaseexporter.util.DbUtil;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**

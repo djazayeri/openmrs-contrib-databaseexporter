@@ -13,11 +13,9 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ColumnValue;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
-import org.openmrs.contrib.databaseexporter.util.DbUtil;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.ArrayList;
@@ -41,7 +39,7 @@ public class LocationTransform extends StructuredAddressTransform {
 	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
 	private List<Integer> replacementLocations;
 	private List<String> locationForeignKeys;
-	private List<Integer> locationAttributeTypes;
+	private Set<Integer> locationAttributeTypes;
 
 	//***** PROPERTIES *****
 
@@ -139,7 +137,7 @@ public class LocationTransform extends StructuredAddressTransform {
 			replacementLocations = new ArrayList<Integer>();
 			replacementLocations.addAll(getKeepOnlyLocations());
 			if (replacementLocations.isEmpty()) {
-				replacementLocations.addAll(context.executeQuery("select location_id from location", new ColumnListHandler<Integer>()));
+				replacementLocations.addAll(context.executeIdQuery("select location_id from location"));
 			}
 		}
 		return replacementLocations;
@@ -153,13 +151,13 @@ public class LocationTransform extends StructuredAddressTransform {
 		return locationForeignKeys;
 	}
 
-	public List<Integer> getLocationAttributeTypes(ExportContext context) {
+	public Set<Integer> getLocationAttributeTypes(ExportContext context) {
 		if (locationAttributeTypes == null) {
 			StringBuilder q = new StringBuilder();
 			q.append("select person_attribute_type_id ");
 			q.append("from   person_attribute_type ");
 			q.append("where  format = 'org.openmrs.Location'");
-			locationAttributeTypes = context.executeQuery(q.toString(), new ColumnListHandler<Integer>());
+			locationAttributeTypes = context.executeIdQuery(q.toString());
 		}
 		return locationAttributeTypes;
 	}

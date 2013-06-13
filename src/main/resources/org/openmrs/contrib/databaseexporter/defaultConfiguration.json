@@ -9,6 +9,7 @@
 			"tableName": "patient",
 			"idColumns": ["patient_id"],
 			"subQueries": [
+				{"tableName": "patient", "idColumns": ["patient_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "patient", "childColumn": "person_id", "parentColumn": "patient_id"},
 				{"tableName": "patient_identifier", "idColumns": ["patient_identifier_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
 				{"tableName": "visit", "idColumns": ["visit_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
@@ -38,6 +39,7 @@
 			"tableName": "person",
 			"idColumns": ["person_id"],
 			"subQueries": [
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_name", "idColumns": ["person_name_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_address", "idColumns": ["person_address_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_attribute", "idColumns": ["person_attribute_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
@@ -52,7 +54,6 @@
 				{"tableName": "users", "idColumns": ["user_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
 			],
 			"dependencies": [
-				{"tableName": "patient", "dependencies": []},
 				{"tableName": "person", "dependencies": []},
 				{"tableName": "users", "dependencies": []}
 			]
@@ -61,6 +62,8 @@
 			"tableName": "users",
 			"idColumns": ["user_id"],
 			"subQueries": [
+				{"tableName": "users", "idColumns": ["user_id","person_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "users", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "user_property", "idColumns": ["user_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
 				{"tableName": "user_role", "idColumns": ["user_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},
 				{"tableName": "notification_alert_recipient", "idColumns": ["alert_id"], "joinTable": "users", "childColumn": "user_id", "parentColumn": "user_id"},

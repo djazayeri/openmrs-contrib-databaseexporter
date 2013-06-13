@@ -14,7 +14,8 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
-import org.openmrs.contrib.databaseexporter.query.PatientQuery;
+import org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery;
+import org.openmrs.contrib.databaseexporter.query.UserQuery;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
 import java.util.ArrayList;
@@ -23,38 +24,43 @@ import java.util.List;
 /**
  * Returns a particular number of patients in configured set of age ranges
  */
-public class PatientFilter extends RowFilter {
+public class UserFilter extends RowFilter {
 
 	//***** PROPERTIES *****
 
-	private List<PatientQuery> queries;
+	private List<UserQuery> queries;
 
 	//***** INSTANCE METHODS *****
 
 	@Override
 	public String getTableName() {
-		return "patient";
+		return "users";
 	}
 
 	@Override
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
-		for (PatientQuery q : getQueries()) {
+		for (UserQuery q : getQueries()) {
 			ret.putAll(q.getColumnName(), q.getIds(context));
+		}
+		// Make sure that if we are filtering users, that we keep the admin and daemon users
+		if (!ret.isEmpty()) {
+			UserIdentificationQuery idq = new UserIdentificationQuery("admin", "daemon");
+			ret.putAll("user_id", idq.getIds(context));
 		}
 		return ret;
 	}
 
 	//***** PROPERTY ACCESS ****
 
-	public List<PatientQuery> getQueries() {
+	public List<UserQuery> getQueries() {
 		if (queries == null) {
-			queries = new ArrayList<PatientQuery>();
+			queries = new ArrayList<UserQuery>();
 		}
 		return queries;
 	}
 
-	public void setQueries(List<PatientQuery> queries) {
+	public void setQueries(List<UserQuery> queries) {
 		this.queries = queries;
 	}
 }

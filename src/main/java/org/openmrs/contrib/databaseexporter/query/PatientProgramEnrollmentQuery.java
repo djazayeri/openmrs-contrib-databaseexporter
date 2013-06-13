@@ -11,9 +11,8 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.filter;
+package org.openmrs.contrib.databaseexporter.query;
 
-import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.Set;
 /**
  * Returns a particular number of patients that have one or more program enrollments of each type
  */
-public class PatientProgramEnrollmentRowFilter extends PatientFilter {
+public class PatientProgramEnrollmentQuery extends PatientQuery {
 
 	public enum ORDER {
 		RANDOM, DATE_ASC, DATE_DESC, NUM_ENCOUNTERS_DESC
@@ -35,30 +34,30 @@ public class PatientProgramEnrollmentRowFilter extends PatientFilter {
 	private Integer numberActivePerProgram = 10; // Default to 10
 	private Integer numberCompletedPerProgram = 10; // Default to 10
 	private boolean includeRetired = false; // Default to false
-	private List<Integer> limitToPrograms; // optional. if null or empty will include all programs
+	private Set<Integer> limitToPrograms; // optional. if null or empty will include all programs
 	private ORDER order = ORDER.RANDOM;
 
 	//***** CONSTRUCTORS *****
 
-	public PatientProgramEnrollmentRowFilter() {}
+	public PatientProgramEnrollmentQuery() {}
 
 	//***** INSTANCE METHODS ******
 
 	@Override
-	public Set<Integer> getPatientIds(ExportContext context) {
+	public Set<Integer> getIds(ExportContext context) {
 		Set<Integer> ret = new HashSet<Integer>();
 
 		if (limitToPrograms == null || limitToPrograms.isEmpty()) {
 			String q = "select program_id from program" + (includeRetired ? "" : " where retired = 0");
-			limitToPrograms = context.executeQuery(q, new ColumnListHandler<Integer>());
+			limitToPrograms = context.executeIdQuery(q);
 		}
 
 		for (Integer programId : limitToPrograms) {
 			String activeQuery = createQuery(programId, "date_completed is null", numberActivePerProgram, order);
-			ret.addAll(context.executeQuery(activeQuery, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(activeQuery));
 
 			String completedQuery = createQuery(programId, "date_completed is not null", numberCompletedPerProgram, order);
-			ret.addAll(context.executeQuery(completedQuery, new ColumnListHandler<Integer>()));
+			ret.addAll(context.executeIdQuery(completedQuery));
 		}
 
 		return ret;
@@ -119,14 +118,14 @@ public class PatientProgramEnrollmentRowFilter extends PatientFilter {
 		this.includeRetired = includeRetired;
 	}
 
-	public List<Integer> getLimitToPrograms() {
+	public Set<Integer> getLimitToPrograms() {
 		if (limitToPrograms == null) {
-			limitToPrograms = new ArrayList<Integer>();
+			limitToPrograms = new HashSet<Integer>();
 		}
 		return limitToPrograms;
 	}
 
-	public void setLimitToPrograms(List<Integer> limitToPrograms) {
+	public void setLimitToPrograms(Set<Integer> limitToPrograms) {
 		this.limitToPrograms = limitToPrograms;
 	}
 

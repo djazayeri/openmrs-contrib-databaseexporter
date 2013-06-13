@@ -13,6 +13,9 @@
  */
 package org.openmrs.contrib.databaseexporter.util;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.util.Date;
 
 /**
@@ -22,15 +25,26 @@ public class EventLog {
 
 	private long firstTime;
 	private long lastTime;
+	private File logFile;
 
-	public EventLog() {
+	public EventLog(File logFile) {
+		this.logFile = logFile;
 		firstTime = System.currentTimeMillis();
 		lastTime = firstTime;
 	}
 
 	public void logEvent(String event) {
 		long currentTime = System.currentTimeMillis();
-		System.out.println(new Date() + ": " + event);
+		String s = new Date() + ": " + event;
+		System.out.println(s);
+		try {
+			s = FileUtils.readFileToString(logFile) + System.getProperty("line.separator") + s;
+		}
+		catch (Exception e) {}
+		try {
+			FileUtils.writeStringToFile(logFile, s, "UTF-8");
+		}
+		catch (Exception e) {}
 		lastTime = currentTime;
 	}
 

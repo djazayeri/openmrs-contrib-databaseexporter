@@ -15,7 +15,6 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
@@ -25,7 +24,6 @@ import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -33,7 +31,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class DatabaseExporter {
@@ -64,12 +61,7 @@ public class DatabaseExporter {
 		try {
 			connection = DbUtil.openConnection(configuration.getSourceDatabaseCredentials());
 
-			String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
-			String dir = configuration.getTargetDirectory();
-			if (Util.isEmpty(dir)) {
-				dir = System.getProperty("user.dir");
-			}
-			File outputFile = new File(dir, "export_"+ fileSuffix + ".sql");
+			File outputFile = configuration.getOutputFile();
 
 			fos = new FileOutputStream(outputFile);
 			OutputStreamWriter osWriter = new OutputStreamWriter(fos, "UTF-8");
@@ -103,19 +95,26 @@ public class DatabaseExporter {
 						String query = context.buildQuery(table, context);
 
 						context.log("Determining applicable transforms for table");
-						List<RowTransform> transforms = new ArrayList<RowTransform>();
-						List<TableTransform> tableTransforms = new ArrayList<TableTransform>();
+						final List<RowTransform> transforms = new ArrayList<RowTransform>();
+						for (RowFilter filter : configuration.getRowFilters()) {
+							transforms.addAll(filter.getTransforms());
+						}
+
 						for (RowTransform transform : configuration.getRowTransforms()) {
 							if (transform.canTransform(table, context)) {
 								transforms.add(transform);
-								if (transform instanceof TableTransform) {
-									tableTransforms.add((TableTransform)transform);
-								};
+							}
+						}
+
+						List<TableTransform> tableTransforms = new ArrayList<TableTransform>();
+						for (RowTransform transform : transforms) {
+							if (transform instanceof TableTransform) {
+								tableTransforms.add((TableTransform)transform);
 							}
 						}
 
 						context.log("Determining number of rows for table");
-						String rowNumQuery = query.replace("*", "count(*)");
+						String rowNumQuery = query.replace(table+".*", "count(*)");
 						final Long totalRows = context.executeQuery(rowNumQuery, new ScalarHandler<Long>());
 						final int batchSize = context.getConfiguration().getBatchSize();
 
@@ -146,11 +145,8 @@ public class DatabaseExporter {
 										row.addColumnValue(columnName, value);
 									}
 									boolean includeRow = true;
-									for (RowTransform transform : configuration.getRowTransforms()) {
+									for (RowTransform transform : transforms) {
 										includeRow = includeRow && transform.applyTransform(row, context);
-									}
-									for (RowTransform transform : configuration.getRowTransforms()) {
-										transform.cleanup(row, context);
 									}
 									if (includeRow) {
 										rowsAdded++;

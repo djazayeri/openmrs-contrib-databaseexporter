@@ -14,12 +14,15 @@
 package org.openmrs.contrib.databaseexporter;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.openmrs.contrib.databaseexporter.filter.TableFilter;
+import org.openmrs.contrib.databaseexporter.filter.DependencyFilter;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.filter.TableFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,7 @@ public class Configuration {
 	private DatabaseCredentials sourceDatabaseCredentials;
 	private String targetDirectory;
 	private Integer batchSize = 10000;
+	private Boolean logSql;
 
 	private TableFilter tableFilter;
 	private List<RowFilter> rowFilters;
@@ -69,6 +73,9 @@ public class Configuration {
 		if (config.getTargetDirectory() != null) {
 			setTargetDirectory(config.getTargetDirectory());
 		}
+		if (config.getLogSql() != null) {
+			setLogSql(config.getLogSql());
+		}
 		if (config.getTableFilter() != null) {
 			setTableFilter(config.getTableFilter());
 		}
@@ -81,6 +88,24 @@ public class Configuration {
 		if (config.getDependencyFilters().size() > 0) {
 			setDependencyFilters(config.getDependencyFilters());
 		}
+	}
+
+	public File getOutputFile() {
+		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
+		String dir = getTargetDirectory();
+		if (Util.isEmpty(dir)) {
+			dir = System.getProperty("user.dir");
+		}
+		return new File(dir, "export_"+ fileSuffix + ".sql");
+	}
+
+	public File getLogFile() {
+		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
+		String dir = getTargetDirectory();
+		if (Util.isEmpty(dir)) {
+			dir = System.getProperty("user.dir");
+		}
+		return new File(dir, "export_"+ fileSuffix + ".log");
 	}
 
 	//***** PROPERTY ACCESS *****
@@ -99,6 +124,18 @@ public class Configuration {
 
 	public void setBatchSize(Integer batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	public boolean isLogSql() {
+		return getLogSql() == Boolean.TRUE;
+	}
+
+	public Boolean getLogSql() {
+		return logSql;
+	}
+
+	public void setLogSql(Boolean logSql) {
+		this.logSql = logSql;
 	}
 
 	public DatabaseCredentials getSourceDatabaseCredentials() {

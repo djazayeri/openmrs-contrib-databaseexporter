@@ -13,10 +13,6 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
-import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
