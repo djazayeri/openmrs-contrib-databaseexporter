@@ -13,6 +13,7 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -50,7 +51,16 @@ public class ColumnValue  {
 			try {
 				StringBuilder replacement = new StringBuilder();
 				replacement.append("0x");
-				InputStream in = ((Blob)value).getBinaryStream();
+				InputStream in = null;
+				if (value instanceof Blob) {
+					in = ((Blob)value).getBinaryStream();
+				}
+				else if (value instanceof byte[]) {
+					in = new ByteArrayInputStream((byte[])value);
+				}
+				else {
+					throw new RuntimeException("Don't know handle to handle binary type " + value.getClass().getSimpleName());
+				}
 				while (true) {
 					try {
 						int b = in.read();
