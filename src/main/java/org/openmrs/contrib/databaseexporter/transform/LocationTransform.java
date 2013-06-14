@@ -106,24 +106,36 @@ public class LocationTransform extends StructuredAddressTransform {
 			for (String tableAndColumn : getLocationForeignKeys(context)) {
 				String[] split = tableAndColumn.split("\\.");
 				if (row.getTableName().equals(split[0])) {
-					ColumnValue pIdColVal = row.getColumnValueMap().get("patient_id");
-					if (pIdColVal == null) {
-						pIdColVal = row.getColumnValueMap().get("person_id");
-					}
-					String pId = (pIdColVal == null ? "" : pIdColVal.getValue().toString());
-					String cacheKey = pId + ":" + row.getRawValue(split[1]);
-					Integer value = patientLocationCache.get(cacheKey);
-					if (value == null) {
-						value = Util.getRandomElementFromList(getReplacementLocations(context));
-						patientLocationCache.put(cacheKey, value);
-					}
-					if (split[0].equals("person_attribute")) {
-						if (getLocationAttributeTypes(context).contains(row.getRawValue("person_attribute_type_id"))) {
+					Object currentValue = row.getRawValue(split[1]);
+					if (currentValue != null) {
+						ColumnValue pIdColVal = row.getColumnValueMap().get("patient_id");
+						if (pIdColVal == null) {
+							pIdColVal = row.getColumnValueMap().get("person_id");
+						}
+						String pId = (pIdColVal == null ? "" : pIdColVal.getValue().toString());
+						String cacheKey = pId + ":" + row.getRawValue(split[1]);
+						Integer value = patientLocationCache.get(cacheKey);
+						if (value == null) {
+							value = Util.getRandomElementFromList(getReplacementLocations(context));
+
+							if (tableAndColumn.equals("location.parent_location")) {
+								if (currentValue.equals(value) && getReplacementLocations(context).size() > 1) {
+									while (currentValue.equals(value)) {
+										value = Util.getRandomElementFromList(getReplacementLocations(context));
+									}
+								}
+							}
+
+							patientLocationCache.put(cacheKey, value);
+						}
+						if (split[0].equals("person_attribute")) {
+							if (getLocationAttributeTypes(context).contains(row.getRawValue("person_attribute_type_id"))) {
+								row.setRawValue(split[1], value);
+							}
+						}
+						else {
 							row.setRawValue(split[1], value);
 						}
-					}
-					else {
-						row.setRawValue(split[1], value);
 					}
 				}
 			}
