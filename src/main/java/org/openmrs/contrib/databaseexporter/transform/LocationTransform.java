@@ -64,12 +64,12 @@ public class LocationTransform extends StructuredAddressTransform {
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("location")) {
 
+			Integer locationId = Integer.valueOf(row.getRawValue("location_id").toString());
+
 			// If we are keeping a location, give it a de-identified address, name, and description
-			Map<String, String> newAddress = getRandomReplacementAddress(row, context);
+			Map<String, String> newAddress = getReplacementAddressFromIndex(locationId, context);
 			for (String column : addressColumns) {
-				if (row.getRawValue(column) != null) {
-					row.setRawValue(column, newAddress.get(column));
-				}
+				row.setRawValue(column, newAddress.get(column));
 			}
 			String name = Util.evaluateExpression(nameReplacement, row).toString();
 			if (usedNames.contains(name)) {

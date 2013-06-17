@@ -17,70 +17,51 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * De-identifies the user table
  */
-public class SimpleReplacementTransform extends RowTransform {
+public class ProviderTransform extends PersonNameTransform {
 
 	//***** PROPERTIES *****
 
-	private String tableName;
-	private Set<String> columnNames;
-	private String replacement;
+	private boolean scrambleName = false;
+	// TODO: private IdentifierGenerator = null;
 
 	//***** CONSTRUCTORS *****
 
-	public SimpleReplacementTransform() {}
+	public ProviderTransform() {}
 
 	//***** INSTANCE METHODS *****
 
 	@Override
 	public boolean canTransform(String tableName, ExportContext context) {
-		return tableName.equals(getTableName());
+		return tableName.equals("provider");
 	}
 
-	@Override
 	public boolean applyTransform(TableRow row, ExportContext context) {
-		if (row.getTableName().equals(getTableName())) {
-			for (String columnName : getColumnNames()) {
-				Object currentValue = row.getRawValue(columnName);
-				if (Util.notEmpty(currentValue)) {
-					row.setRawValue(columnName, Util.evaluateExpression(getReplacement(), row));
-				}
+
+		// If the row will be kept, de-identify user data if specified
+		if (row.getTableName().equals("provider")) {
+			if (Util.notEmpty(row.getRawValue("name"))) {
+				List<String> givenNameList = getReplacements("given", true, row, context);
+				List<String> familyNameList = getReplacements("family", false, row, context);
+				String s = Util.getRandomElementFromList(givenNameList) + " " + Util.getRandomElementFromList(familyNameList);
+				row.setRawValue("name", s);
 			}
 		}
+
 		return true;
 	}
 
 	//***** PROPERTY ACCESS *****
 
-	public String getTableName() {
-		return tableName;
+	public boolean isScrambleName() {
+		return scrambleName;
 	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
-	}
-
-	public Set<String> getColumnNames() {
-		if (columnNames == null) {
-			columnNames = new HashSet<String>();
-		}
-		return columnNames;
-	}
-
-	public void setColumnNames(Set<String> columnNames) {
-		this.columnNames = columnNames;
-	}
-
-	public String getReplacement() {
-		return replacement;
-	}
-
-	public void setReplacement(String replacement) {
-		this.replacement = replacement;
+	public void setScrambleName(boolean scrambleName) {
+		this.scrambleName = scrambleName;
 	}
 }

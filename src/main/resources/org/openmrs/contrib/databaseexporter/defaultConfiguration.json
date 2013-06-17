@@ -73,6 +73,16 @@
 			"dependencies": [
 				{"tableName": "person", "dependencies": []}
 			]
+		},
+		"provider": {
+			"tableName": "provider",
+			"idColumns": ["provider_id"],
+			"subQueries": [
+				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"}
+			],
+			"dependencies": [
+				{"tableName": "person", "dependencies": []}
+			]
 		}
 	}
 }
