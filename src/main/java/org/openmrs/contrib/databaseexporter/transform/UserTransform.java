@@ -17,8 +17,8 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * De-identifies the user table
@@ -27,10 +27,10 @@ public class UserTransform extends RowTransform {
 
 	//***** PROPERTIES *****
 
-	private List<Integer> limitToUsers;
 	private String systemIdReplacement;
 	private String usernameReplacement;
 	private String passwordReplacement;
+	private Set<String> usersToPreserve;
 
 	//***** CONSTRUCTORS *****
 
@@ -47,17 +47,18 @@ public class UserTransform extends RowTransform {
 
 		// If the row will be kept, de-identify user data if specified
 		if (row.getTableName().equals("users")) {
-			Object systemId = row.getRawValue("system_id");
-			if (systemIdReplacement != null && !systemId.equals("admin") && !systemId.equals("daemon")) {
-				row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
-			}
-			Object username = row.getRawValue("username");
-			if (usernameReplacement != null && !username.equals("admin") && !username.equals("daemon")) {
-				row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
-			}
-			if (passwordReplacement != null) {
-				String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
-				row.setRawValue("password", Util.encodeString(pwAndSalt));
+			Object user = Util.nvl(row.getRawValue("username"), row.getRawValue("system_id"));
+			if (!getUsersToPreserve().contains(user)) {
+				if (systemIdReplacement != null) {
+					row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
+				}
+				if (usernameReplacement != null) {
+					row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
+				}
+				if (passwordReplacement != null) {
+					String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
+					row.setRawValue("password", Util.encodeString(pwAndSalt));
+				}
 			}
 			row.setRawValue("secret_question", null);
 			row.setRawValue("secret_answer", null);
@@ -92,14 +93,16 @@ public class UserTransform extends RowTransform {
 		this.passwordReplacement = passwordReplacement;
 	}
 
-	public List<Integer> getLimitToUsers() {
-		if (limitToUsers == null) {
-			limitToUsers = new ArrayList<Integer>();
+	public Set<String> getUsersToPreserve() {
+		if (usersToPreserve == null) {
+			usersToPreserve = new HashSet<String>();
+			usersToPreserve.add("admin");
+			usersToPreserve.add("daemon");
 		}
-		return limitToUsers;
+		return usersToPreserve;
 	}
 
-	public void setLimitToUsers(List<Integer> limitToUsers) {
-		this.limitToUsers = limitToUsers;
+	public void setUsersToPreserve(Set<String> usersToPreserve) {
+		this.usersToPreserve = usersToPreserve;
 	}
 }

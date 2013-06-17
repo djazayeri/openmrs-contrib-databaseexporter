@@ -149,7 +149,12 @@ public class ExportContext {
 
 	public List<Integer> getTemporaryTableValues(String tableName, String columnName) {
 		String tempTableName = getTemporaryTableName(tableName, columnName);
-		return executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>());
+		if (tempTableName != null) {
+			return executeQuery("select id from " + tempTableName, new ColumnListHandler<Integer>());
+		}
+		else {
+			return executeQuery("select " + columnName + " from " + tableName, new ColumnListHandler<Integer>());
+		}
 	}
 
 	public String buildQuery(String tableName, ExportContext context) {

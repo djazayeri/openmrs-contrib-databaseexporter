@@ -18,7 +18,6 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,19 +33,11 @@ import java.util.Set;
  */
 public class LocationTransform extends StructuredAddressTransform {
 
-	//***** INTERNAL USE VARIABLES ****
-	private Set<String> usedNames = new HashSet<String>();
-	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
-	private List<Integer> replacementLocations;
-	private List<String> locationForeignKeys;
-	private Set<Integer> locationAttributeTypes;
-
 	//***** PROPERTIES *****
 
 	private String nameReplacement = "${address1} Health Center";
 	private String descriptionReplacement = "A de-identified health center located at ${address1}";
 	private boolean scrambleLocationsInData = true;
-	private List<Integer> keepOnlyLocations;
 
 	//***** CONSTRUCTORS *****
 
@@ -57,7 +48,7 @@ public class LocationTransform extends StructuredAddressTransform {
 		if (tableName.equals("location")) {
 			return true;
 		}
-		if (scrambleLocationsInData || !getKeepOnlyLocations().isEmpty()) {
+		if (scrambleLocationsInData) {
 			for (String tableAndColumn : getLocationForeignKeys(context)) {
 				String[] split = tableAndColumn.split("\\.");
 				if (tableName.equals(split[0])) {
@@ -72,14 +63,6 @@ public class LocationTransform extends StructuredAddressTransform {
 
 	public boolean applyTransform(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("location")) {
-
-			// Do not include locations if a restricted list is specified, and the location is not the Unknown Location
-			if (!"Unknown Location".equals(row.getRawValue("name"))) {
-				Integer lId = Integer.valueOf(row.getRawValue("location_id").toString());
-				if (!getKeepOnlyLocations().isEmpty() && !getKeepOnlyLocations().contains(lId)) {
-					return false;
-				}
-			}
 
 			// If we are keeping a location, give it a de-identified address, name, and description
 			Map<String, String> newAddress = getRandomReplacementAddress(row, context);
@@ -101,8 +84,8 @@ public class LocationTransform extends StructuredAddressTransform {
 			usedNames.add(name);
 		}
 
-		// If we have indicated to scramble locations, or if we are limiting to specific locations, then do this
-		if (scrambleLocationsInData || !getKeepOnlyLocations().isEmpty()) {
+		// If we have indicated to scramble locations then do this
+		if (scrambleLocationsInData) {
 			for (String tableAndColumn : getLocationForeignKeys(context)) {
 				String[] split = tableAndColumn.split("\\.");
 				if (row.getTableName().equals(split[0])) {
@@ -144,17 +127,20 @@ public class LocationTransform extends StructuredAddressTransform {
 		return true;
 	}
 
+	//***** INTERNAL CACHES *****
+
+	private Set<String> usedNames = new HashSet<String>();
+	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
+
+	private List<Integer> replacementLocations;
 	private List<Integer> getReplacementLocations(ExportContext context) {
 		if (replacementLocations == null) {
-			replacementLocations = new ArrayList<Integer>();
-			replacementLocations.addAll(getKeepOnlyLocations());
-			if (replacementLocations.isEmpty()) {
-				replacementLocations.addAll(context.executeIdQuery("select location_id from location"));
-			}
+			replacementLocations = context.getTemporaryTableValues("location", "location_id");
 		}
 		return replacementLocations;
 	}
 
+	private List<String> locationForeignKeys;
 	public List<String> getLocationForeignKeys(ExportContext context) {
 		if (locationForeignKeys == null) {
 			locationForeignKeys = context.getTableMetadata("location").getForeignKeys("location_id");
@@ -163,6 +149,7 @@ public class LocationTransform extends StructuredAddressTransform {
 		return locationForeignKeys;
 	}
 
+	private Set<Integer> locationAttributeTypes;
 	public Set<Integer> getLocationAttributeTypes(ExportContext context) {
 		if (locationAttributeTypes == null) {
 			StringBuilder q = new StringBuilder();
@@ -173,6 +160,8 @@ public class LocationTransform extends StructuredAddressTransform {
 		}
 		return locationAttributeTypes;
 	}
+
+	//***** PROPERTY ACCESS *****
 
 	public String getNameReplacement() {
 		return nameReplacement;
@@ -196,16 +185,5 @@ public class LocationTransform extends StructuredAddressTransform {
 
 	public void setScrambleLocationsInData(boolean scrambleLocationsInData) {
 		this.scrambleLocationsInData = scrambleLocationsInData;
-	}
-
-	public List<Integer> getKeepOnlyLocations() {
-		if (keepOnlyLocations == null) {
-			keepOnlyLocations = new ArrayList<Integer>();
-		}
-		return keepOnlyLocations;
-	}
-
-	public void setKeepOnlyLocations(List<Integer> keepOnlyLocations) {
-		this.keepOnlyLocations = keepOnlyLocations;
 	}
 }

@@ -52,6 +52,11 @@ public abstract class StructuredAddressTransform extends RowTransform {
 		return Util.getRandomElementFromList(getReplacements());
 	}
 
+	public Map<String, String> getReplacementAddressFromIndex(Integer index, ExportContext context) {
+		int which = index % getReplacements().size();
+		return Util.getRandomElementFromList(getReplacements());
+	}
+
 	//***** PROPERTIES *****
 
 	public String getAddressPath() {

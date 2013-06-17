@@ -91,7 +91,7 @@ public class Configuration {
 	}
 
 	public File getOutputFile() {
-		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
+		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_HH_mm");
 		String dir = getTargetDirectory();
 		if (Util.isEmpty(dir)) {
 			dir = System.getProperty("user.dir");
@@ -100,7 +100,7 @@ public class Configuration {
 	}
 
 	public File getLogFile() {
-		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_hh_mm");
+		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_HH_mm");
 		String dir = getTargetDirectory();
 		if (Util.isEmpty(dir)) {
 			dir = System.getProperty("user.dir");

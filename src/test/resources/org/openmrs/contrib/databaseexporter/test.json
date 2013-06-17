@@ -11,8 +11,7 @@
 		"excludeData": [
 			"cohort", "cohort_member", "concept_proposal*", "dataquality_tally",
 			"field", "form_field", "form2program", "formentry*", "hl7_in_*", "groovy_scripts",
-			"metadatasharing_*", "name_phonetics", "person_merge_log", "reporting_*",
-			"report_object", "report_schema_xml", "serialized_object",
+			"metadatasharing_*", "name_phonetics", "person_merge_log", "report_object", "report_schema_xml",
 			"sync_import", "sync_record", "sync_server_record", "user_property"
 		]
 	},
@@ -71,7 +70,8 @@
 	"rowTransforms": [
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
-			"passwordReplacement": "Test1234"
+			"passwordReplacement": "Test1234",
+			"usersToPreserve": ["mseaton"]
 		},
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
@@ -83,8 +83,7 @@
 			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform"
 		},
 		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.LocationTransform",
-			"keepOnlyLocations": [1,25,26,27,28.29]
+			"@class": "org.openmrs.contrib.databaseexporter.transform.LocationTransform"
 		},
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
