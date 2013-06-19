@@ -11,20 +11,29 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.contrib.databaseexporter.transform;
+package org.openmrs.contrib.databaseexporter.generator;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
-
-import java.util.List;
+import org.openmrs.contrib.databaseexporter.util.Util;
 
 /**
- * Represents a particular type of transform that can add new rows to the table, rather than altering existing rows
+ * Returns a set of ids for a particular table column
  */
-public interface TableTransform {
+public class SimpleReplacementGenerator extends IdentifierGenerator {
 
-	/**
-	 * @return the alternative table contents that this should output for this table
-	 */
-	public List<TableRow> getNewRows(String tableName, ExportContext context);
+	private String replacement;
+
+	@Override
+	public String generateIdentifier(TableRow row, ExportContext context) {
+		return Util.evaluateExpression(replacement, row).toString();
+	}
+
+	public String getReplacement() {
+		return replacement;
+	}
+
+	public void setReplacement(String replacement) {
+		this.replacement = replacement;
+	}
 }

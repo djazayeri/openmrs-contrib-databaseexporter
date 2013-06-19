@@ -10,7 +10,7 @@
 		"includeData": ["*"],
 		"excludeData": [
 			"cohort", "cohort_member", "dataquality_tally",
-			"formentry*", "hl7_in_*", "groovy_scripts",
+			"formentry*", "hl7_in_*", "groovy_scripts", "idgen_log_entry",
 			"metadatasharing_*", "name_phonetics", "person_merge_log",
 			"report_object", "report_schema_xml",
 			"sync_import", "sync_record", "sync_server_record", "user_property"
@@ -65,6 +65,7 @@
 				"dataqualitytools.weeklyReport.emailTo": "",
 				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
 				"namephonetics.familyNameStringEncoder": "Double Metaphone",
+				"registration.defaultLocationCode": "XXX",
 				"scheduler.password": "Test1234",
 				"sync.admin_email": "",
 				"sync.server_name": "TEST",
@@ -84,7 +85,30 @@
 			}
 		},
 		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform"
+			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform",
+			"defaultGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${patient_identifier_id}"
+			},
+			"replacementGenerators": {
+				"Rwanda National ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.SequentialGenerator",
+					"firstIdentifierBase": "0000000001",
+					"baseCharacterSet": "0123456789"
+				},
+				"IMB ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.VerhoeffGenerator",
+					"firstIdentifierBase": "90100000",
+					"baseCharacterSet": "0123456789"
+				},
+				"IMB Primary Care Registration ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.LuhnGenerator",
+					"firstIdentifierBase": "00001",
+					"baseCharacterSet": "0123456789ACEFHJKMNPUWXY",
+					"prefix": "XXX",
+					"checkDigitSeparator": "-"
+				}
+			}
 		},
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaLocationTransform"

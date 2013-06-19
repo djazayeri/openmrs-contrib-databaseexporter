@@ -52,7 +52,6 @@ public class RwandaLocationTransform extends LocationTransform {
 			if (row.getTableName().equals("global_property")) {
 				String propertyName = row.getRawValue("property").toString();
 				if (propertyName.equals("reports.currentlocation") ||
-					propertyName.equals("registration.defaultLocationCode") ||
 					propertyName.equals("registration.rwandaLocationCodes") ||
 					propertyName.equals("dataqualitytools.sitesToList") ||
 					propertyName.equals("dataqualitytools.sitesToTally")) {
@@ -71,11 +70,6 @@ public class RwandaLocationTransform extends LocationTransform {
 			{
 				TableRow tr = rowsToReplace.get("reports.currentlocation");
 				tr.setRawValue("property_value", (getUsedNames().isEmpty() ? "" : getUsedNames().iterator().next()));
-				ret.add(tr);
-			}
-			{
-				TableRow tr = rowsToReplace.get("registration.defaultLocationCode");
-				tr.setRawValue("property_value", "1111");
 				ret.add(tr);
 			}
 

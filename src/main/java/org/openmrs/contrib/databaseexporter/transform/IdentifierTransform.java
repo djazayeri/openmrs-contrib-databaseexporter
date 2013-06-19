@@ -13,9 +13,17 @@
  */
 package org.openmrs.contrib.databaseexporter.transform;
 
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
+import org.openmrs.contrib.databaseexporter.generator.IdentifierGenerator;
 import org.openmrs.contrib.databaseexporter.util.Util;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Transforms patient identifier type and patient identifier
@@ -23,7 +31,8 @@ import org.openmrs.contrib.databaseexporter.util.Util;
  */
 public class IdentifierTransform extends RowTransform {
 
-	private String identifierReplacement = "${patient_identifier_id}";
+	private IdentifierGenerator defaultGenerator;
+	private Map<String, IdentifierGenerator> replacementGenerators;
 
 	//***** CONSTRUCTORS *****
 
@@ -33,35 +42,73 @@ public class IdentifierTransform extends RowTransform {
 
 	@Override
 	public boolean canTransform(String tableName, ExportContext context) {
-		return tableName.equals("patient_identifier_type") || tableName.equals("patient_identifier");
+		return tableName.equals("patient_identifier");
 	}
 
-	/**
-	 * TODO: Improve this
-	 * This probably isn't a sufficient solution, as we will want to be able to demonstrate
-	 * and test the identifier validators and use them with idgen.  For now, we will leave it
-	 * like this because it accomplishes the first most important task, which is de-identification
-	 */
+	@Override
 	public boolean transformRow(TableRow row, ExportContext context) {
-		if (row.getTableName().equals("patient_identifier_type")) {
-			row.setRawValue("check_digit", 0);
-			row.setRawValue("validator", null);
-			row.setRawValue("format", null);
-			row.setRawValue("format_description", null);
-		}
 		if (row.getTableName().equals("patient_identifier")) {
-			row.setRawValue("identifier", Util.evaluateExpression(getIdentifierReplacement(), row));
+			IdentifierGenerator generator = getReplacementGenerator(row, context);
+			if (generator != null && Util.notEmpty(row.getRawValue("identifier"))) {
+				row.setRawValue("identifier", generator.generateIdentifier(row, context));
+			}
 		}
 		return true;
 	}
 
-	//***** PROPERTY ACCESS *****
+	//***** INTERNAL CACHES *****
 
-	public String getIdentifierReplacement() {
-		return identifierReplacement;
+	private Map<Integer, String> identifierTypeNameCache;
+	public IdentifierGenerator getReplacementGenerator(TableRow row, ExportContext context) {
+		IdentifierGenerator ret = null;
+		if (identifierTypeNameCache == null) {
+			String q = "select patient_identifier_type_id, name from patient_identifier_type";
+			identifierTypeNameCache = context.executeQuery(q, new ResultSetHandler<Map<Integer, String>>() {
+				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+					Map<Integer, String> result = new HashMap<Integer, String>();
+					while (rs.next()) {
+						result.put(rs.getInt(1), rs.getString(2));
+					}
+					return result;
+				}
+			});
+			for (Iterator<Integer> i = identifierTypeNameCache.keySet().iterator(); i.hasNext();) {
+				Integer typeId = i.next();
+				if (!getReplacementGenerators().containsKey(identifierTypeNameCache.get(typeId))) {
+					i.remove();
+				}
+			}
+		}
+		Object attTypeId = row.getRawValue("identifier_type");
+		if (attTypeId != null) {
+			String typeName = identifierTypeNameCache.get(attTypeId);
+			ret = getReplacementGenerators().get(typeName);
+		}
+		if (ret != null) {
+			return ret;
+		}
+		return getDefaultGenerator();
 	}
 
-	public void setIdentifierReplacement(String identifierReplacement) {
-		this.identifierReplacement = identifierReplacement;
+	//***** PROPERTY ACCESS *****
+
+
+	public IdentifierGenerator getDefaultGenerator() {
+		return defaultGenerator;
+	}
+
+	public void setDefaultGenerator(IdentifierGenerator defaultGenerator) {
+		this.defaultGenerator = defaultGenerator;
+	}
+
+	public Map<String, IdentifierGenerator> getReplacementGenerators() {
+		if (replacementGenerators == null) {
+			replacementGenerators = new HashMap<String, IdentifierGenerator>();
+		}
+		return replacementGenerators;
+	}
+
+	public void setReplacementGenerators(Map<String, IdentifierGenerator> replacementGenerators) {
+		this.replacementGenerators = replacementGenerators;
 	}
 }
