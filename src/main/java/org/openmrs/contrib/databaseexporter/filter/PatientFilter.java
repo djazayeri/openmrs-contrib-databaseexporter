@@ -40,6 +40,7 @@ public class PatientFilter extends RowFilter {
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		for (PatientQuery q : getQueries()) {
+			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}
 		return ret;

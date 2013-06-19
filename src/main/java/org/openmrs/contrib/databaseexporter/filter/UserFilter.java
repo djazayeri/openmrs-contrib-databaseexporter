@@ -41,6 +41,7 @@ public class UserFilter extends RowFilter {
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		for (UserQuery q : getQueries()) {
+			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}
 		// Make sure that if we are filtering users, that we keep the admin and daemon users
