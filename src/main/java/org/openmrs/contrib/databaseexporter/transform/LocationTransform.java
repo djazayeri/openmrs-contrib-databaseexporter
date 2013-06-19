@@ -130,6 +130,9 @@ public class LocationTransform extends StructuredAddressTransform {
 	//***** INTERNAL CACHES *****
 
 	private Set<String> usedNames = new HashSet<String>();
+	protected Set<String> getUsedNames() {
+		return usedNames;
+	}
 	private Map<String, Integer> patientLocationCache = new HashMap<String, Integer>();
 
 	private List<Integer> replacementLocations;

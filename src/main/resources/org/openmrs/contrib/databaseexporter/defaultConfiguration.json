@@ -78,7 +78,9 @@
 			"tableName": "provider",
 			"idColumns": ["provider_id"],
 			"subQueries": [
-				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"}
+				{"tableName": "provider", "idColumns": ["provider_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
+				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
+				{"tableName": "location_tag_map", "idColumns": ["location_id"], "joinTable": "location", "childColumn": "location_id", "parentColumn": "location_id"}
 			],
 			"dependencies": [
 				{"tableName": "person", "dependencies": []}

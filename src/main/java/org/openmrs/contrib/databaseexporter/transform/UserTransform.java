@@ -30,7 +30,7 @@ public class UserTransform extends RowTransform {
 	private String systemIdReplacement;
 	private String usernameReplacement;
 	private String passwordReplacement;
-	private Set<String> usersToPreserve;
+	private Set<String> usernamesToPreserve;
 
 	//***** CONSTRUCTORS *****
 
@@ -48,17 +48,17 @@ public class UserTransform extends RowTransform {
 		// If the row will be kept, de-identify user data if specified
 		if (row.getTableName().equals("users")) {
 			Object user = Util.nvl(row.getRawValue("username"), row.getRawValue("system_id"));
-			if (!getUsersToPreserve().contains(user)) {
+			if (!getUsernamesToPreserve().contains(user)) {
 				if (systemIdReplacement != null) {
 					row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
 				}
 				if (usernameReplacement != null) {
 					row.setRawValue("username", Util.evaluateExpression(usernameReplacement, row));
 				}
-				if (passwordReplacement != null) {
-					String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
-					row.setRawValue("password", Util.encodeString(pwAndSalt));
-				}
+			}
+			if (passwordReplacement != null) {
+				String pwAndSalt = Util.evaluateExpression(passwordReplacement, row).toString() + row.getRawValue("salt");
+				row.setRawValue("password", Util.encodeString(pwAndSalt));
 			}
 			row.setRawValue("secret_question", null);
 			row.setRawValue("secret_answer", null);
@@ -93,16 +93,16 @@ public class UserTransform extends RowTransform {
 		this.passwordReplacement = passwordReplacement;
 	}
 
-	public Set<String> getUsersToPreserve() {
-		if (usersToPreserve == null) {
-			usersToPreserve = new HashSet<String>();
-			usersToPreserve.add("admin");
-			usersToPreserve.add("daemon");
+	public Set<String> getUsernamesToPreserve() {
+		if (usernamesToPreserve == null) {
+			usernamesToPreserve = new HashSet<String>();
+			usernamesToPreserve.add("admin");
+			usernamesToPreserve.add("daemon");
 		}
-		return usersToPreserve;
+		return usernamesToPreserve;
 	}
 
-	public void setUsersToPreserve(Set<String> usersToPreserve) {
-		this.usersToPreserve = usersToPreserve;
+	public void setUsernamesToPreserve(Set<String> usernamesToPreserve) {
+		this.usernamesToPreserve = usernamesToPreserve;
 	}
 }

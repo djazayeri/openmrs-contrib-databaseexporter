@@ -57,19 +57,32 @@
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
 			"passwordReplacement": "Test1234",
-			"usersToPreserve": ["mseaton"]
+			"usernamesToPreserve": ["mseaton"]
 		},
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
 			"replacements": {
-				"scheduler.password": "Test1234"
+				"dataqualitytools.weeklyReport.emailTo": "",
+				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
+				"namephonetics.familyNameStringEncoder": "Double Metaphone",
+				"scheduler.password": "Test1234",
+				"sync.admin_email": "",
+				"sync.server_name": "TEST",
+				"sync.server_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeee"
+			}
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAttributeTransform",
+			"type": "Race",
+			"replacements": {
+				"*": "RW"
 			}
 		},
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform"
 		},
 		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.LocationTransform"
+			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaLocationTransform"
 		},
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
