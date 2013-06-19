@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * This transform does everything that the standard LocationTransform does,
- * as well as replacing any global property values as necessary
+ * as well as replacing any global property values that refer to locations as necessary
  */
 public class RwandaLocationTransform extends LocationTransform {
 

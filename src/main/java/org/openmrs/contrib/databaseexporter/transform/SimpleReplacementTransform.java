@@ -17,7 +17,9 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,9 +29,8 @@ public class SimpleReplacementTransform extends RowTransform {
 
 	//***** PROPERTIES *****
 
-	private String tableName;
-	private Set<String> columnNames;
-	private String replacement;
+	// This is in the format "tableName.columnName" -> "replacementExpression"
+	private Map<String, String> replacements;
 
 	//***** CONSTRUCTORS *****
 
@@ -39,48 +40,47 @@ public class SimpleReplacementTransform extends RowTransform {
 
 	@Override
 	public boolean canTransform(String tableName, ExportContext context) {
-		return tableName.equals(getTableName());
+		return getIncludedTables().contains(tableName);
 	}
 
 	@Override
 	public boolean transformRow(TableRow row, ExportContext context) {
-		if (row.getTableName().equals(getTableName())) {
-			for (String columnName : getColumnNames()) {
-				Object currentValue = row.getRawValue(columnName);
-				if (Util.notEmpty(currentValue)) {
-					row.setRawValue(columnName, Util.evaluateExpression(getReplacement(), row));
+		if (getIncludedTables().contains(row.getTableName())) {
+			for (String s : getReplacements().keySet()) {
+				String[] split = s.split("\\.");
+				if (split[0].equals(row.getTableName())) {
+					Object currentValue = row.getRawValue(split[1]);
+					if (Util.notEmpty(currentValue)) {
+						row.setRawValue(split[1], Util.evaluateExpression(getReplacements().get(s), row));
+					}
 				}
 			}
 		}
 		return true;
 	}
 
+	//***** INTERNAL CACHES *****
+	private Set<String> includedTables;
+	public Set<String> getIncludedTables() {
+		if (includedTables == null) {
+			includedTables = new HashSet<String>();
+			for (String tableAndColumn : getReplacements().keySet()) {
+				includedTables.add(tableAndColumn.split("\\.")[0]);
+			}
+		}
+		return includedTables;
+	}
+
 	//***** PROPERTY ACCESS *****
 
-	public String getTableName() {
-		return tableName;
-	}
-
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
-	}
-
-	public Set<String> getColumnNames() {
-		if (columnNames == null) {
-			columnNames = new HashSet<String>();
+	public Map<String, String> getReplacements() {
+		if (replacements == null) {
+			replacements = new HashMap<String, String>();
 		}
-		return columnNames;
+		return replacements;
 	}
 
-	public void setColumnNames(Set<String> columnNames) {
-		this.columnNames = columnNames;
-	}
-
-	public String getReplacement() {
-		return replacement;
-	}
-
-	public void setReplacement(String replacement) {
-		this.replacement = replacement;
+	public void setReplacements(Map<String, String> replacements) {
+		this.replacements = replacements;
 	}
 }

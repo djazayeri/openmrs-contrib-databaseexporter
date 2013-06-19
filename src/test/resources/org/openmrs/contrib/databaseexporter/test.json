@@ -73,9 +73,14 @@
 		},
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAttributeTransform",
-			"type": "Race",
 			"replacements": {
-				"*": "RW"
+				"Race": [""],
+				"Birthplace": ["MA","NY","NJ","FL"],
+				"Boarding School": [""],
+				"Citizenship": ["USA"],
+				"Father's name": ["Adams","Banks","Ford","Green","Jones","King","Murphy","Price","Smith","Thomas"],
+				"Mother's Name": ["Bell","Carroll","Ellis","Faye","Kay","Madison","Pearl","Riley","Shelly","Taylor"],
+				"Health District": ["Middlesex","Suffolk","New York","Burlington","Monmouth","Union","Palm Beach"]
 			}
 		},
 		{
@@ -100,21 +105,14 @@
 		},
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
-			"tableName": "obs",
-			"columnNames": ["value_text"],
-			"replacement": "Value replaced during de-identification ${obs_id}"
-		},
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
-			"tableName": "form",
-			"columnNames": ["xslt","template"],
-			"replacement": "Values removed during database export"
-		},
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
-			"tableName": "usagestatistics_usage",
-			"columnNames": ["query"],
-			"replacement": ""
+			"replacements": {
+				"obs.value_text": "Value replaced during de-identification ${obs_id}",
+				"provider.identifier": "${provider_id}",
+				"form.xslt": "Values removed during database export",
+				"form.template": "Values removed during database export",
+				"usagestatistics_usage.query": "",
+				"idgen_remote_source.url": "http://localhost:8080/openmrs"
+			}
 		}
 	]
 }

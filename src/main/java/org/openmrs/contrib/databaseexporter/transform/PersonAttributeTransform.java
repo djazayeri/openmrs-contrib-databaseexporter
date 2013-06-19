@@ -16,22 +16,24 @@ package org.openmrs.contrib.databaseexporter.transform;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
+import org.openmrs.contrib.databaseexporter.util.ListMap;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
- * De-identifies the user table
+ * Applies String replacement transforms on the person attribute table
  */
 public class PersonAttributeTransform extends RowTransform {
 
 	//***** PROPERTIES *****
 
-	private String type;
-	private Map<String, String> replacements;
+	private ListMap<String, String> replacements;
 
 	//***** CONSTRUCTORS *****
 
@@ -47,19 +49,12 @@ public class PersonAttributeTransform extends RowTransform {
 	@Override
 	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_attribute")) {
-			if (matchesAttributeType(type, row, context)) {
-				Object rawValue = row.getRawValue("value");
-				if (Util.notEmpty(rawValue)) {
-					String value = rawValue.toString();
-					for (String pattern : getReplacements().keySet()) {
-						if (Util.matchesPattern(value, pattern)) {
-							Object replacement = Util.evaluateExpression(getReplacements().get(pattern), row);
-							if ("[null]".equals(replacement)) {
-								replacement = null;
-							}
-							row.setRawValue("value", replacement);
-						}
-					}
+			Object rawValue = row.getRawValue("value");
+			if (Util.notEmpty(rawValue)) {
+				List<String> replacementsForRow = getReplacementsForRow(row, context);
+				if (replacementsForRow != null) {
+					String s = Util.getRandomElementFromList(replacementsForRow);
+					row.setRawValue("value", Util.evaluateExpression(s, row));
 				}
 			}
 		}
@@ -68,42 +63,44 @@ public class PersonAttributeTransform extends RowTransform {
 
 	//***** INTERNAL CACHES *****
 
-	private Map<String, Integer> attributeTypeCache;
-	public boolean matchesAttributeType(String type, TableRow row, ExportContext context) {
-		if (attributeTypeCache == null) {
+	private Map<Integer, String> attributeNameCache;
+	public List<String> getReplacementsForRow(TableRow row, ExportContext context) {
+		if (attributeNameCache == null) {
 			String q = "select person_attribute_type_id, name from person_attribute_type";
-			attributeTypeCache = context.executeQuery(q, new ResultSetHandler<Map<String, Integer>>() {
-				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
-					Map<String, Integer> result = new HashMap<String, Integer>();
+			attributeNameCache = context.executeQuery(q, new ResultSetHandler<Map<Integer, String>>() {
+				public Map<Integer, String> handle(ResultSet rs) throws SQLException {
+					Map<Integer, String> result = new HashMap<Integer, String>();
 					while (rs.next()) {
-						result.put(rs.getString(2), rs.getInt(1));
+						result.put(rs.getInt(1), rs.getString(2));
 					}
 					return result;
 				}
 			});
+			for (Iterator<Integer> i = attributeNameCache.keySet().iterator(); i.hasNext();) {
+				Integer typeId = i.next();
+				if (!getReplacements().containsKey(attributeNameCache.get(typeId))) {
+					i.remove();
+				}
+			}
 		}
-		Integer attributeTypeId = Integer.valueOf(row.getRawValue("person_attribute_type_id").toString());
-		return attributeTypeCache.get(type).equals(attributeTypeId);
+		Object attTypeId = row.getRawValue("person_attribute_type_id");
+		if (attTypeId != null) {
+			String typeName = attributeNameCache.get(attTypeId);
+			return getReplacements().get(typeName);
+		}
+		return null;
 	}
 
 	//***** PROPERTY ACCESS *****
 
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public Map<String, String> getReplacements() {
+	public ListMap<String, String> getReplacements() {
 		if (replacements == null) {
-			replacements = new HashMap<String, String>();
+			replacements = new ListMap<String, String>();
 		}
 		return replacements;
 	}
 
-	public void setReplacements(Map<String, String> replacements) {
+	public void setReplacements(ListMap<String, String> replacements) {
 		this.replacements = replacements;
 	}
 }
