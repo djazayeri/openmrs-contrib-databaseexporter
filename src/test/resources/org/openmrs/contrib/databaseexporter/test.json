@@ -31,6 +31,30 @@
 						{"minAge": 31, "maxAge": 60},
 						{"minAge": 61}
 					]
+				},
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientEncounterQuery",
+					"numberPerType": 3,
+					"numberPerForm": 3,
+					"order": "NUM_OBS_DESC"
+				},
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientProgramEnrollmentQuery",
+					"numberActivePerProgram": 3,
+					"numberCompletedPerProgram": 3
+				},
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientRelationshipQuery",
+					"numberPerType": 3
+				},
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdentifierQuery",
+					"numberPerType": 3
+				},
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientVitalStatusQuery",
+					"numberAlive": 3,
+					"numberDead": 3
 				}
 			]
 		},
