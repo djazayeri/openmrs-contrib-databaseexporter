@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * This replaces the address_hierarchy table with contents based on the configured addresses file
  */
-public class RwandaAddressHierarchyTransform extends StructuredAddressTransform implements TableTransform {
+public class RwandaAddressHierarchyTransform extends StructuredAddressTransform {
 
 	private List<String> hierarchyLevels = Arrays.asList("country","state_province","county_district","city_village","address3","address1");
 
@@ -42,7 +42,7 @@ public class RwandaAddressHierarchyTransform extends StructuredAddressTransform 
 	}
 
 	// Remove all existing rows from the address_hierarchy_entry table
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("address_hierarchy")) {
 			return false;
 		}
@@ -50,7 +50,7 @@ public class RwandaAddressHierarchyTransform extends StructuredAddressTransform 
 	}
 
 	@Override
-	public List<TableRow> getNewRows(String tableName, ExportContext context) {
+	public List<TableRow> postProcess(String tableName, ExportContext context) {
 		List<TableRow> rows = new ArrayList<TableRow>();
 		if (tableName.equals("address_hierarchy")) {
 			int entryNum = 0;

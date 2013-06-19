@@ -40,7 +40,7 @@ public class ProviderTransform extends PersonNameTransform {
 		return tableName.equals("provider");
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 
 		// If the row will be kept, de-identify user data if specified
 		if (row.getTableName().equals("provider")) {

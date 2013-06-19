@@ -1,6 +1,6 @@
 {
 	"sourceDatabaseCredentials": {
-		"url": "jdbc:mysql://localhost:3306/openmrs?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8",
+		"url": "jdbc:mysql://localhost:3306/openmrs_rwink?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8",
 		"user": "openmrs",
 		"password": "openmrs"
 	},

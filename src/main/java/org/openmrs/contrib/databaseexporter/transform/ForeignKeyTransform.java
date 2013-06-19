@@ -51,7 +51,7 @@ public class ForeignKeyTransform extends RowTransform {
 		return false;
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		List<String> fks = getForeignKeys(context);
 		for (String columnName : row.getColumns()) {
 			String tabCol = row.getTableName() + "." + columnName;

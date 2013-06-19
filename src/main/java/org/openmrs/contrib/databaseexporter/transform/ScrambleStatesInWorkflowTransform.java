@@ -42,7 +42,7 @@ public class ScrambleStatesInWorkflowTransform extends RowTransform {
 		return tableName.equals("patient_state");
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equalsIgnoreCase("patient_state")) {
 			if (possibleStates == null || possibleStates.isEmpty()) {
 				String stateQuery = "select program_workflow_state_id from program_workflow_state where program_workflow_id = " + workflowToScramble + " and retired = 0";

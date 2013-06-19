@@ -53,7 +53,7 @@ public class PersonNameTransform extends RowTransform {
 		return tableName.equals("person_name");
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_name")) {
 
 			String givenNameStart = (String)row.getRawValue("given_name");

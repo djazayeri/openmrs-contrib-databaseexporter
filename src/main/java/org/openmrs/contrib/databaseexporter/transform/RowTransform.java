@@ -17,12 +17,18 @@ import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Interface for a transform that can manipulate a row in one or more tables
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class RowTransform {
 
+	/**
+	 * @return true if this transform operates on the table passed in
+	 */
 	public abstract boolean canTransform(String tableName, ExportContext context);
 
 	/**
@@ -30,8 +36,18 @@ public abstract class RowTransform {
 	 * Also provides an additional mechanism for excluding a row.  If a transform returns false,
 	 * this indicates to the export framework that the row should be excluded altogether
 	 */
-	public abstract boolean applyTransform(TableRow row, ExportContext context);
+	public abstract boolean transformRow(TableRow row, ExportContext context);
 
+	/**
+	 * After each row has been processed, this method allows for additional post processing
+	 * to occur for the given table.  This allows for whole-table replacements to occur, or
+	 * for transforms to occur that need information gathered during the row processing steps
+	 */
+	public List<TableRow> postProcess(String tableName, ExportContext context) {
+		return new ArrayList<TableRow>();
+	}
+
+	@Override
 	public String toString() {
 		return getClass().getSimpleName();
 	}

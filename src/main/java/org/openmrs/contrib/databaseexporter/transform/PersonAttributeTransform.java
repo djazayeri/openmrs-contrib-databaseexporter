@@ -45,7 +45,7 @@ public class PersonAttributeTransform extends RowTransform {
 	}
 
 	@Override
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("person_attribute")) {
 			if (matchesAttributeType(type, row, context)) {
 				Object rawValue = row.getRawValue("value");

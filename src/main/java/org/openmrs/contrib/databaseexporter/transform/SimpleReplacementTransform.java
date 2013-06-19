@@ -43,7 +43,7 @@ public class SimpleReplacementTransform extends RowTransform {
 	}
 
 	@Override
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals(getTableName())) {
 			for (String columnName : getColumnNames()) {
 				Object currentValue = row.getRawValue(columnName);

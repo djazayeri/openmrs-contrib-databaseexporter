@@ -16,13 +16,23 @@ package org.openmrs.contrib.databaseexporter.transform;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This transform does everything that the standard LocationTransform does,
  * as well as replacing any global property values as necessary
  */
 public class RwandaLocationTransform extends LocationTransform {
+
+	//***** INTERNAL VARIABLES *****
+
+	private Map<String, TableRow> rowsToReplace = new HashMap<String, TableRow>();
+
+	//***** CONSTRUCTORS *****
 
 	public RwandaLocationTransform() {}
 
@@ -36,42 +46,66 @@ public class RwandaLocationTransform extends LocationTransform {
 	}
 
 	@Override
-	public boolean applyTransform(TableRow row, ExportContext context) {
-		boolean ret = super.applyTransform(row, context);
+	public boolean transformRow(TableRow row, ExportContext context) {
+		boolean ret = super.transformRow(row, context);
 		if (ret) {
-			// At this point, all of the caches should be populated
-
 			if (row.getTableName().equals("global_property")) {
 				String propertyName = row.getRawValue("property").toString();
-
-				if (propertyName.equals("reports.currentlocation")) {
-					String replacement = getUsedNames().isEmpty() ? "" : getUsedNames().iterator().next();
-					row.setRawValue("property_value", replacement);
-				}
-				else if (propertyName.equals("registration.defaultLocationCode")) {
-					row.setRawValue("property_value", "1111");
-				}
-
-				if (propertyName.equals("registration.rwandaLocationCodes") ||
+				if (propertyName.equals("reports.currentlocation") ||
+					propertyName.equals("registration.defaultLocationCode") ||
+					propertyName.equals("registration.rwandaLocationCodes") ||
 					propertyName.equals("dataqualitytools.sitesToList") ||
 					propertyName.equals("dataqualitytools.sitesToTally")) {
-					StringBuilder sb = new StringBuilder();
-					int num=0;
-					for (Iterator<String> i = getUsedNames().iterator(); i.hasNext();) {
-						num++;
-						String name = i.next();
-						if (propertyName.equals("registration.rwandaLocationCodes")) {
-							sb.append(name + ":" + num + (i.hasNext() ? "|" : ""));
-						}
-						else if (propertyName.equals("dataqualitytools.sitesToList")) {
-							sb.append(name + ":" + name + (i.hasNext() ? "|" : ""));
-						}
-						else if (propertyName.equals("dataqualitytools.sitesToTally")) {
-							sb.append(name + (i.hasNext() ? "|" : ""));
-						}
-					}
-					row.setRawValue("property_value", sb.toString());
+					rowsToReplace.put(propertyName, row);
+					return false;
 				}
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public List<TableRow> postProcess(String tableName, ExportContext context) {
+		List<TableRow> ret = new ArrayList<TableRow>();
+		if (tableName.equals("global_property")) {
+			{
+				TableRow tr = rowsToReplace.get("reports.currentlocation");
+				tr.setRawValue("property_value", (getUsedNames().isEmpty() ? "" : getUsedNames().iterator().next()));
+				ret.add(tr);
+			}
+			{
+				TableRow tr = rowsToReplace.get("registration.defaultLocationCode");
+				tr.setRawValue("property_value", "1111");
+				ret.add(tr);
+			}
+
+			StringBuilder rwLocCodes = new StringBuilder();
+			StringBuilder sitesToList = new StringBuilder();
+			StringBuilder sitesToTally = new StringBuilder();
+
+			int num=0;
+			for (Iterator<String> i = getUsedNames().iterator(); i.hasNext();) {
+				num++;
+				String name = i.next();
+				rwLocCodes.append(name).append(":").append(num).append(i.hasNext() ? "|" : "");
+				sitesToList.append(name).append(":").append(name).append(i.hasNext() ? "|" : "");
+				sitesToTally.append(name).append(i.hasNext() ? "|" : "");
+			}
+
+			{
+				TableRow tr = rowsToReplace.get("registration.rwandaLocationCodes");
+				tr.setRawValue("property_value", rwLocCodes.toString());
+				ret.add(tr);
+			}
+			{
+				TableRow tr = rowsToReplace.get("dataqualitytools.sitesToList");
+				tr.setRawValue("property_value", sitesToList.toString());
+				ret.add(tr);
+			}
+			{
+				TableRow tr = rowsToReplace.get("dataqualitytools.sitesToTally");
+				tr.setRawValue("property_value", sitesToTally.toString());
+				ret.add(tr);
 			}
 		}
 		return ret;

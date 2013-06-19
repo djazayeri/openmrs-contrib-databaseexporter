@@ -32,7 +32,7 @@ public class GlobalPropertyTransform extends RowTransform {
 		return tableName.equals("global_property");
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("global_property")) {
 			for (String propertyName : replacements.keySet()) {
 				if (propertyName.equals(row.getRawValue("property"))) {

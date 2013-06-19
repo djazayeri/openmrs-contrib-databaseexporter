@@ -18,8 +18,8 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
-import org.openmrs.contrib.databaseexporter.transform.TableTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
+import org.openmrs.contrib.databaseexporter.util.ListMap;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.io.File;
@@ -84,6 +84,8 @@ public class DatabaseExporter {
 					filter.filter(context);
 				}
 
+				ListMap<String, RowTransform> tableTransforms = new ListMap<String, RowTransform>(true);
+
 				for (final String table : context.getTableData().keySet()) {
 					TableConfig tableConfig = context.getTableData().get(table);
 
@@ -101,23 +103,17 @@ public class DatabaseExporter {
 						String query = context.buildQuery(table, context);
 
 						context.log("Determining applicable transforms for table");
-						final List<RowTransform> transforms = new ArrayList<RowTransform>();
 						for (RowFilter filter : configuration.getRowFilters()) {
-							transforms.addAll(filter.getTransforms());
+							tableTransforms.putAll(table, filter.getTransforms());
 						}
 
 						for (RowTransform transform : configuration.getRowTransforms()) {
 							if (transform.canTransform(table, context)) {
-								transforms.add(transform);
+								tableTransforms.putInList(table, transform);
 							}
 						}
 
-						List<TableTransform> tableTransforms = new ArrayList<TableTransform>();
-						for (RowTransform transform : transforms) {
-							if (transform instanceof TableTransform) {
-								tableTransforms.add((TableTransform)transform);
-							}
-						}
+						final List<RowTransform> transforms = Util.nvl(tableTransforms.get(table), new ArrayList<RowTransform>());
 
 						context.log("Determining number of rows for table");
 						String rowNumQuery = query.replace(table+".*", "count(*)");
@@ -152,7 +148,7 @@ public class DatabaseExporter {
 									}
 									boolean includeRow = true;
 									for (RowTransform transform : transforms) {
-										includeRow = includeRow && transform.applyTransform(row, context);
+										includeRow = includeRow && transform.transformRow(row, context);
 									}
 									if (includeRow) {
 										rowsAdded++;
@@ -171,24 +167,26 @@ public class DatabaseExporter {
 							context.write("");
 						}
 						context.log(rowsAdded + " rows retrieved and transformed from initial queries");
-
-						// Now that we have retrieved and transformed existing values, apply any whole-table transforms
-						for (TableTransform transform : tableTransforms) {
-							context.log("Applying table transform: " + transform);
-							List<TableRow> rows = transform.getNewRows(table, context);
-							if (rows != null) {
-								for (int i=1; i<=rows.size(); i++) {
-									TableRow row = rows.get(i-1);
-									DbUtil.writeInsertRow(row, i, i, context);
-								}
-								context.write(";");
-								context.write("");
-							}
-						}
-
-						context.log(rowsAdded + " rows exported");
 						context.log("********************************************************************");
 
+						DbUtil.writeTableExportFooter(table, context);
+					}
+				}
+
+				// Handle any post-processing transforms that have been defined
+				for (String table : tableTransforms.keySet()) {
+					List<TableRow> rows = new ArrayList<TableRow>();
+					for (RowTransform transform : tableTransforms.get(table)) {
+						rows.addAll(transform.postProcess(table, context));
+					}
+					if (rows != null && !rows.isEmpty()) {
+						DbUtil.writeTableExportHeader(table, context);
+						for (int i=1; i<=rows.size(); i++) {
+							TableRow row = rows.get(i-1);
+							DbUtil.writeInsertRow(row, i, i, context);
+						}
+						context.write(";");
+						context.write("");
 						DbUtil.writeTableExportFooter(table, context);
 					}
 				}

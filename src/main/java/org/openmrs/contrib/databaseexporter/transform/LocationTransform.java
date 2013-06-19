@@ -61,7 +61,7 @@ public class LocationTransform extends StructuredAddressTransform {
 
 	//***** INSTANCE METHODS *****
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 		if (row.getTableName().equals("location")) {
 
 			Integer locationId = Integer.valueOf(row.getRawValue("location_id").toString());

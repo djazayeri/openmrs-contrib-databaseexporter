@@ -43,7 +43,7 @@ public class UserTransform extends RowTransform {
 		return tableName.equals("users");
 	}
 
-	public boolean applyTransform(TableRow row, ExportContext context) {
+	public boolean transformRow(TableRow row, ExportContext context) {
 
 		// If the row will be kept, de-identify user data if specified
 		if (row.getTableName().equals("users")) {
