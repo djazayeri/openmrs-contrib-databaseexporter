@@ -87,7 +87,7 @@ When a particular type of data is filtered, this means that only a subset of the
 
 Currently the system supports 3 different types of Row Filters:
 
-##### Patient Filter #####
+#### Patient Filter ####
 
 A patient filter limits the patients that are exported based on a series of configurable queries that you can specify.  These queries include the following:
 
@@ -225,7 +225,7 @@ Example:  Ensure at least 20 alive patients and 5 dead patients are included in 
 }
 ```
 
-##### User Filter #####
+#### User Filter ####
 
 A user filter limits the users that are exported based on a series of configurable queries that you can specify.  These queries include the following:
 
@@ -244,7 +244,7 @@ Example:  Export only my account
 }
 ```
 
-##### Provider Filter #####
+#### Provider Filter ####
 
 A provider filter limits the providers that are exported based on a series of configurable queries that you can specify.  These queries include the following:
 
@@ -261,7 +261,7 @@ Example:  Export just 5 sample providers
 	"@class" : "org.openmrs.contrib.databaseexporter.query.ProviderIdQuery",
 	"ids": [1,2,3,4,5]
 }
-
+```
 
 #### rowTransforms ####
 
