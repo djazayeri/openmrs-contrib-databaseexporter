@@ -25,7 +25,7 @@ Configuration
 
 In order to run the databaseexporter, you must specify an appropriate configuration file.  This configuration file is expected to be in JSON format, and contains the following settings:
 
-##### sourceDatabaseCredentials #####
+#### sourceDatabaseCredentials ####
 
 This is where you specify the details of how the tool should connect to the source database from which you would like to export data.  The supported attributes are:
 
@@ -43,7 +43,7 @@ Example:
 	}
 ```
 
-##### targetLocation #####
+#### targetLocation ####
 
 This allows you to specify the directory in which the tool will write it's output.  When run, two files will be produced in this target directory:  "export_yyyy_MM_dd_HH_ss.log" and "export_yyyy_MM_dd_HH_ss.sql".
 
@@ -52,7 +52,7 @@ Example:
 	"targetLocation": "/home/openmrs/exports"
 ```
 
-##### tableFilter #####
+#### tableFilter ####
 
 This allows you to specify which tables are included and which are excluded from the export.  This allows you fine-grained control over which tables you wish to create and which you want to export data.  
 
@@ -75,7 +75,7 @@ Example:
 	}
 ```
 
-##### rowFilters #####
+#### rowFilters ####
 
 Whereas tableFilters (above) allow you to specify which tables you want to export data for altogether, Row Filters are what provide the capability to export only a subset of data across your database.  You can specify 0-N filters, which will run in the order that they are listed in your configuration file.  Filters are additive, meaning that if 2 Filters operate against the same type of data (Patients, for example), then the results of these two filters will be combined and the union will be included in the export.  If a particular table is affected by at least 1 filter, then it's rows will be limited by the results of the filters.  If a table is not affected by any of the listed filters, then all of it's data will be included.
 
@@ -87,7 +87,7 @@ When a particular type of data is filtered, this means that only a subset of the
 
 Currently the system supports 3 different types of Row Filters:
 
-###### Patient Filter ######
+##### Patient Filter #####
 
 A patient filter limits the patients that are exported based on a series of configurable queries that you can specify.  These queries include the following:
 
@@ -225,7 +225,45 @@ Example:  Ensure at least 20 alive patients and 5 dead patients are included in 
 }
 ```
 
-##### rowTransforms #####
+##### User Filter #####
+
+A user filter limits the users that are exported based on a series of configurable queries that you can specify.  These queries include the following:
+
+**UserIdentificationQuery**
+
+Include only those users with the given usernames (note: admin and daemon will always be included)
+
+Options:
+* **userNames** (required):  The list of users to include
+
+Example:  Export only my account
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery",
+	"userNames": ["mseaton"]
+}
+```
+
+##### Provider Filter #####
+
+A provider filter limits the providers that are exported based on a series of configurable queries that you can specify.  These queries include the following:
+
+**ProviderIdQuery**
+
+Include only those providers with the given primary key provider ids
+
+Options:
+* **ids** (required):  The list of provider ids to include
+
+Example:  Export just 5 sample providers
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.query.ProviderIdQuery",
+	"ids": [1,2,3,4,5]
+}
+
+
+#### rowTransforms ####
 
 Whereas row filters determine what rows of data should be exported, row transforms are able to transform the actual content of each row prior to exporting.  For example, if you wanted to replace each patient name with a randomly-selected generic alternative, you would do this by configuring the appropriate transform.  Specifying rowTransforms follows the format:
 ```
