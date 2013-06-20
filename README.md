@@ -470,6 +470,7 @@ Options:
 * See PersonAddressTransform for valid options
 
 Example:  Set up the address hierarchy entry tables with the default values from the included address replacement configuration
+```
 {
 	"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform"
 }
