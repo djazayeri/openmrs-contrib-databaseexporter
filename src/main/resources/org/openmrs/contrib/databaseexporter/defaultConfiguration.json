@@ -45,12 +45,12 @@
 				{"tableName": "person_attribute", "idColumns": ["person_attribute_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id"], "joinTable": "person", "childColumn": "winner_person_id", "parentColumn": "person_id"},
 				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id"], "joinTable": "person", "childColumn": "loser_person_id", "parentColumn": "person_id"},
-				{"tableName": "person_merge_log", "idColumns": ["winner_person_id"], "joinTable": "person", "childColumn": "loser_person_id", "parentColumn": "person_id"},
-				{"tableName": "person_merge_log", "idColumns": ["loser_person_id"], "joinTable": "person", "childColumn": "winner_person_id", "parentColumn": "person_id"},
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "person_merge_log", "childColumn": "person_id", "parentColumn": "winner_person_id"},
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "person_merge_log", "childColumn": "person_id", "parentColumn": "loser_person_id"},
 				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
 				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
-				{"tableName": "relationship", "idColumns": ["person_a"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
-				{"tableName": "relationship", "idColumns": ["person_b"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "relationship", "childColumn": "person_id", "parentColumn": "person_a"},
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "relationship", "childColumn": "person_id", "parentColumn": "person_b"},
 				{"tableName": "users", "idColumns": ["user_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
 			],
 			"dependencies": [
@@ -79,11 +79,11 @@
 			"idColumns": ["provider_id"],
 			"subQueries": [
 				{"tableName": "provider", "idColumns": ["provider_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
-				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
-				{"tableName": "location_tag_map", "idColumns": ["location_id"], "joinTable": "location", "childColumn": "location_id", "parentColumn": "location_id"}
+				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "provider", "childColumn": "person_id", "parentColumn": "person_id"},
+				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"}
 			],
 			"dependencies": [
-				{"tableName": "person", "dependencies": []}
+				{"tableName": "person"}
 			]
 		}
 	}

@@ -82,6 +82,8 @@ public class DbUtil {
 				return rowsHandled;
 			}
 		});
+		TableMetadata usersMetadata = ret.get("users");
+		usersMetadata.getForeignKeyMap().putInList("user_id", "person_name.changed_by"); // This seems to be missing
 
 		return ret;
 	}
