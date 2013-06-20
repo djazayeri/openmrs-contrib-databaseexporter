@@ -45,11 +45,11 @@ Example:
 
 ##### targetLocation #####
 
-This allows you to specify the location and name of the file that the tool produces.
+This allows you to specify the directory in which the tool will write it's output.  When run, two files will be produced in this target directory:  "export_yyyy_MM_dd_HH_ss.log" and "export_yyyy_MM_dd_HH_ss.sql".
 
 Example:
 ```
-	"targetLocation": "/home/openmrs/openmrs_export.sql"
+	"targetLocation": "/home/openmrs/exports"
 ```
 
 ##### tableFilter #####
@@ -69,104 +69,44 @@ Example:
 ```
 	"tableFilter": {
 		"includeSchema": ["*"],
-		"excludeSchema": ["temp*],
+		"excludeSchema": ["temp*"],
 		"includeData": ["*"],
-		"excludeData": ["htmlformentry*","sync*","concept_word"]
+		"excludeData": ["hl7_in_*","person_merge_log","concept_word"]
 	}
 ```
 
 ##### rowFilters #####
 
-Whereas tableFilters (above) allow you to specify which tables you want to export data for altogether, Row Filters are what provide the capability to export only a subset of data across your database.  For example, if you wanted to export all of your metadata, but only the patient data for 3 specific patients, you can configure this with appropriate rowFilters.  Specifying rowFilters follows the format:
-```
-"rowFilters": [
-	{
-		"@class" : "org.openmrs.contrib.databaseexporter.filter.Filter1",
-		"numericAttribute": numValue,
-		"stringAttribute": "strValue",
-		"listAttribute": ["value1", "value2"]
-	},
-	{
-		"@class" : "org.openmrs.contrib.databaseexporter.filter.Filter2",
-		"filterNumericAttribute": numValue,
-		"filterStringAttribute": "strValue",
-		"filterListAttribute": ["value1", "value2"]
-	}
-	...
-]
-```
-You can choose to specify 0-N filters, which will run in the order that they are listed in your configuration file.  Filters are additive, meaning that if Filter 1 filters the patient table to patients 1, 2, and 3, and then Filter 2 filters the patient table to patients 4, 5, and 6, then the resulting export file will contain all 6 of these patients.  If a particular table is affected by at least 1 filter, then it's rows will be limited by the results of the filters.  If a table is not affected by any of the listed filters, then all of it's data will be included.
+Whereas tableFilters (above) allow you to specify which tables you want to export data for altogether, Row Filters are what provide the capability to export only a subset of data across your database.  You can specify 0-N filters, which will run in the order that they are listed in your configuration file.  Filters are additive, meaning that if 2 Filters operate against the same type of data (Patients, for example), then the results of these two filters will be combined and the union will be included in the export.  If a particular table is affected by at least 1 filter, then it's rows will be limited by the results of the filters.  If a table is not affected by any of the listed filters, then all of it's data will be included.
 
-All filters have a single common attribute, named "exclusionFilter", which is false by default.  By configuring this attribute to true, you can essentially say "include all rows except those that the filter matches".
+When a particular type of data is filtered, this means that only a subset of the rows in that table will be exported.  Because of this, any table that has a foreign key relationship with this table will be affected.  In this case, one of two things will happen:
 
-The list of available filters, and their configuration options, is:
+1. If the table represents data that depends upon the referenced table to retain it's meaning or purpose, then this table will be filtered to match the parent table.  For example, if you filter patients, this will automatically filter patient identifiers, such that only those patient identifiers associated with patients in the export will be included.
 
-###### General Purpose Filters ######
+2. If the table represents data that does not derive it's meaning from it's relationship with the referenced table, then the foreign key will be replaced.  For example, if you filter users, this will not automatically filter all data that references these users as their "creator", "changed_by", "retired_by", or "voided_by".  Rather, a randomly selected value from the group of valid, filtered users will be chosen and used as a replacement.
 
-These filters can be applied broadly to constrain values in a wide array of tables to suit custom needs.
+Currently the system supports 3 different types of Row Filters:
 
-**DiscreteValueFilter**
+###### Patient Filter ######
 
-Limits the rows in a particular table based on whether or not a column value matches one or more specified values.
-	
-Options:
-* **tableName** (required):  The table to filter
-* **columnName** (required): The column for which you want to apply the constraint
-* **values** (required):  A list of values that the column must match to be included
-* **exclusionFilter** (optional, defaults to false):  See above
+A patient filter limits the patients that are exported based on a series of configurable queries that you can specify.  These queries include the following:
 
-Example:  Include only certain properties from the user_property table
-```
-{
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.DiscreteValueFilter",
-	"tableName": "user_property",
-	"columnName": "property",
-	"values": ["loginAttempts","emailAddress"]
-}
-```
-
-**PatternValueFilter**
-
-Limits the rows in a particular table based on whether or not a column value matches one or more specified patterns.
-
-Options:
-* **tableName** (required):  The table to filter
-* **columnName** (required): The column for which you want to apply the constraint
-* **patterns** (required):  A list of patterns that the column must match to be included.  This supports the database "like" syntax (%).
-* **exclusionFilter** (optional, defaults to false):  See above
-
-Example:  Exclude global properties for certain modules that are no longer in use
-```
-{
-	"@class" : "org.openmrs.contrib.databaseexporter.filter.PatternValueFilter",
-	"tableName": "global_property",
-	"columnName": "property",
-	"values": ["htmlformentry%","sync%"],
-	"exclusionFilter": true
-}
-```
-
-###### Patient Data Filters ######
-
-These filters are specifically designed to limit the patients that are exported (along with any of their associated data, including encounters, obs, program enrollments, drug orders, etc)
-
-**PatientIdFilter**
+**PatientIdQuery**
 
 Include patient data for only those patients with the specified patientIds in the export
 
 Options:
-* **patientIds** (required):  The list of patientIds to include
-* **exclusionFilter** (optional, defaults to false):  See above
+* **ids** (required):  The list of patientIds to include
 
 Example:  Export data for only 5 specific patients for testing
 ```
 {
 	"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdQuery",
-	"patientIds": [111,222,333,444,555]
+	"ids": [111,222,333,444,555]
 }
 ```
 
-**PatientsHavingAgeFilter**
+**PatientAgeQuery**
 
 Include representative data for up to the specified number of patients in each of the specified age ranges.
 
@@ -190,7 +130,7 @@ Example:  Ensure at least 100 patients exist who are between 0-2, 3-10, 11-15, 1
 }
 ```
 
-**PatientsHavingEncounterFilter**
+**PatientEncounterQuery**
 
 Include representative encounter data that includes at least the specified number of patients who have encounters by form and encounter type
 
@@ -212,7 +152,7 @@ Example:  Ensure at least 5 patients with each non-retired encounter type are in
 }
 ```
 
-**PatientsHavingProgramEnrollmentFilter**
+**PatientProgramEnrollmentQuery**
 
 Include representative program enrollment data that includes at least the specified number of patients who have enrollments in the specified programs with the specified status
 
@@ -232,7 +172,7 @@ Example:  Ensure at least 20 patients with active enrollments and and 50 patient
 }
 ```
 
-**PatientsHavingRelationshipFilter**
+**PatientRelationshipQuery**
 
 Include representative relationship data that includes at least the specified number of patients who have relationships in each of the specified type
 
@@ -250,7 +190,7 @@ Example:  Ensure at least 5 patients with each relationship type, including reti
 }
 ```
 
-**PatientsHavingIdentifierFilter**
+**PatientIdentifierQuery**
 
 Include representative identifier data that includes at least the specified number of patients who have identifiers in each of the specified type
 
@@ -268,7 +208,7 @@ Example:  Ensure at least 100 patients with each non-retired identifier type is 
 }
 ```
 
-**PatientsHavingVitalStatusFilter**
+**PatientVitalStatusQuery**
 
 Include representative data for both alive and dead patients
 
@@ -310,7 +250,7 @@ Whereas row filters determine what rows of data should be exported, row transfor
 * You can choose to specify 0-N transforms, which will run in the order that they are listed in your configuration file.
 * Transforms can exclude rows altogether, so even if a rowFilter chooses to include a particular row, a rowTransform may later decide to exclude it.
 * Transforms can add completely new rows
-* Many transforms support "expressions".  Wne you see the word "expression" in the description below, this means that it supports free text, as well as replacement values for any other value within the row in the format "Hello ${another_column_name_in_the_row}"
+* Many transforms support "expressions".  When you see the word "expression" in the description below, this means that it supports free text, as well as replacement values for any other value within the row in the format "Hello ${another_column_name_in_the_row}"
 
 The list of available filters, and their configuration options, is as follows:
 
@@ -319,22 +259,17 @@ The list of available filters, and their configuration options, is as follows:
 Replaces the value in all of the specified table/column entries with the configured replacement value
 
 Options:
-* **tableAndColumnList** (required):  This should be a list of table/column pairs in the format ["table1.column1","table2.column2"]
-* **replacement** (required): This should be an expression (see above for definition) that defines the replacement value
+* **replacements** (required):  This should be a map from tableName.columnName to replacement expression
 
 Example:  Replace the obs.value_text column before exporting to ensure no sensitive data is exported that might be contained there
 ```
 {
 	"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
-	"tableAndColumnList": ["obs.value_text"],
-	"replacement": "Value replaced during de-identification ${obs_id}"
+	"replacements": {
+           "obs.value_text": "Value replaced during de-identification ${obs_id}"
+        }
 }
 ```
-
-
-
-
-
 
 PersonAddressTransform
 
