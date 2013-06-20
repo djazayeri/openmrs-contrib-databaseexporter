@@ -294,7 +294,7 @@ The list of available filters, and their configuration options, is as follows:
 
 **SimpleReplacementTransform**
 
-Replaces the value in all of the specified table/column entries with the configured replacement value
+Allows you to specify a collection of tableName.columnName -> replacement pairs, in order to apply a common replacement expression across all values in a particular column
 
 Options:
 * **replacements** (required):  This should be a map from tableName.columnName to replacement expression
@@ -309,66 +309,264 @@ Example:  Replace the obs.value_text column before exporting to ensure no sensit
 }
 ```
 
-PersonAddressTransform
+**GlobalPropertyTransform**
 
-	private String addressPath = CONFIG_PACKAGE + "addresses.config";
-	private String addressSeparator = ",";
+Allows you to specify a simple expression replacement for 1-N global properties
 
-PersonNameTransform
+Options:
+* **replacements** (required):  This should be a map from propertyName to propertyValue
 
-	private boolean reproducible = false; // If true, this will randomize in a reproducible fashion
-	private String maleNamePath = CONFIG_PACKAGE + "maleNames.config";
-	private String femaleNamePath = CONFIG_PACKAGE + "femaleNames.config";
-	private String familyNamePath = CONFIG_PACKAGE + "familyNames.config";
+Example:  Change the scheduler password for security reasons, and change any server specific settings
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
+	"replacements": {
+		"scheduler.password": "Admin123",
+		"metadatasharing.urlPrefix": "http://localhost:8080/openmrs"
+        }
+}
+```
 
-IdentifierTransform
+**GlobalPropertyTransform**
 
-	private String identifierReplacement = "${patient_identifier_id}";
+Allows you to specify a simple expression replacement for 1-N global properties
 
-LocationTransform
+Options:
+* **replacements** (required):  This should be a map from propertyName to propertyValue
 
-	private String addressPath = CONFIG_PACKAGE + "addresses.config";
-	private String addressSeparator = ",";
-	private String nameReplacement = "${address1} Health Center";
-	private String descriptionReplacement = "A de-identified health center located at ${address1}";
-	private boolean scrambleLocationsInData = true;
-	private List<Integer> keepOnlyLocations;
+Example:  Change the scheduler password for security reasons, and change any server specific settings
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
+	"replacements": {
+		"scheduler.password": "Admin123",
+		"metadatasharing.urlPrefix": "http://localhost:8080/openmrs"
+        }
+}
+```
 
-	{
-		"@class": "org.openmrs.contrib.databaseexporter.transform.LocationTransform",
-		"keepOnlyLocations": [1,25,26,27,28.29]
+**IdentifierTransform**
+
+Allows you to transform all identifiers of one or more types with a particular identifier generator.  The format for this is as follows:
+
+Options:
+* **defaultGenerator** (optional):  If specified, all identifiers not configured with a specific generator will use this on
+* **replacementGenerators** (optional):  If specified, is a Map from Identifier Type name to Generator configuration
+
+Example:  Configure all identifiers to be replaced by default by their primary key in the patient_identifier table for de-identification purposes.  Configure the "OpenMRS ID" to use a Verhoeff-based generator to produce a random replacement that meets validation requirements.
+```
+{
+	"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform",
+	"defaultGenerator": {
+		"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+		"replacement": "${patient_identifier_id}"
+	},
+	"replacementGenerators": {
+		"OpenMRS ID": {
+			"@class" : "org.openmrs.contrib.databaseexporter.generator.VerhoeffGenerator",
+			"firstIdentifierBase": "90100000",
+			"baseCharacterSet": "0123456789"
+		}
 	}
+}
+```
 
-RwandaAddressHierarchyTransform
+The following Generators are available:
 
-	private List<String> hierarchyLevels = Arrays.asList("country","state_province","county_district","city_village","address3","address1");
+** SimpleReplacementGenerator: **
 
-	{
-		"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform",
+Replaces the identifier with the configured expression replacment value
+
+Options:
+* **replacement** (required):  The expression to use for the replacement
+
+Example:
+```
+"defaultGenerator": {
+	"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+	"replacement": "${patient_identifier_id}"
+}
+```
+
+** SequentialGenerator: **
+
+Replaces the identifier with a sequentially allocated value in the configured base
+
+Options:
+* **baseCharacterSet** (required):  The character set to use
+* **firstIdentifierBase** (optional):  The first identifierBase to start at
+* **prefix** (optional):  Any prefix to put on the identifier
+* **suffix** (optional):  Any suffix to put on the identifier
+
+Example:  Generate a sequential numeric identifier, starting at 5001
+```
+"defaultGenerator": {
+	"@class" : "org.openmrs.contrib.databaseexporter.generator.SequentialGenerator",
+	"baseCharacterSet": "0123456789",
+	"firstIdentifierBase": "5001"
+}
+```
+
+** VerhoeffGenerator: **
+
+Extension of the SequentialGenerator that appends a Verhoeff-based checkdigit, with a dash separator, to the end of the identifier
+
+Options:
+* See Sequential Generator
+
+Note:  You should make sure you configure this generator use use a baseCharacterSet of "0123456789"
+
+** LuhnGenerator: **
+
+Extension of the SequentialGenerator that appends a Luhn-based checkdigit, with a configurable separator, to the end of the identifier
+
+Options:
+* See Sequential Generator
+* **checkDigitSeparator** (optional):  If specified, will use this to divide the undecorated identifier from the check-digit.  Defaults to ""
+
+
+**LocationTransform**
+
+For each location in the system, this will automatically choose a random address from the configured address resource, and replace the location address components with it.  It also allows you to replace the name and description of the locations with configured expressions and optionally scramble what locations are associated with what patients in the underlying data
+
+Options:
+* **nameReplacement** (optional):  An expression for replacing the name
+* **descriptionReplacement** (optional):  An expression for replacing the description
+* **addressPath** (optional): The location of a resource file containing replacement addresses.  There is a resource that is used by default if no custom file specified.
+* **addressSeparator** (optional): The character used to separate address fields in the address replacement resource.  Defaults to ","
+* **scrambleLocationsInData** (optional): Defaults to true.  If true, this will randomize the locations that are associated with all patient data in the system, to ensure that location patterns cannot be used to identify patient populations in the exported dataset
+
+
+Example:  De-identify the names and addresses of all Locations in the system, but do not scramble how these locations are distributed across the exported patients
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.LocationTransform",
+	"nameReplacement": "${address1} Health Center",
+	"descriptionReplacement": "A de-identified health center located at ${address1}",
+	"scrambleLocationsInData:: false
+}
+```
+
+**PersonAddressTransform**
+
+For each person address in the system, this will automatically choose a random replacement address from the configured address resource
+
+Options:
+* **addressPath** (optional): The location of a resource file containing replacement addresses.  There is a resource that is used by default if no custom file specified.
+* **addressSeparator** (optional): The character used to separate address fields in the address replacement resource.  Defaults to ","
+
+Example:  De-identify all person addresses with the default address resource
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
+}
+```
+
+**RwandaAddressHierarchyTransform**
+
+Update the address hierarchy entry table used by the rwandaaddresshierarchy module with the values from the configured address replacement file
+
+Options:
+* See PersonAddressTransform for valid options
+
+Example:  Set up the address hierarchy entry tables with the default values from the included address replacement configuration
+{
+	"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform"
+}
+```
+
+**PersonNameTransform**
+
+For each person name in the system, this will automatically choose a random replacement from the configured name resources
+
+Options:
+* **maleNamePath** (optional): The location of a resource file containing replacement male names.  There is a resource that is used by default if no custom file specified.
+* **femaleNamePath** (optional): The location of a resource file containing replacement female names.  There is a resource that is used by default if no custom file specified.
+* **familyNamePath** (optional): The location of a resource file containing replacement family names.  There is a resource that is used by default if no custom file specified.
+* **reproducible** (optional): Defaults to false.  If true, this will pick replacement names in a way that is consistent every time this tool is run on the same database.  The names will still be de-identified, but in a predictable way.
+
+Resource files are expected to be a text file that contains one name per line
+
+Example:  De-identify all person names with default given names, and user-specified family names
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonNameTransform",
+	"familyNamePath": "/home/openmrs/export/customizedFamilyNames.txt"
+}
+```
+
+**ProviderTransform**
+
+Provides exactly the same functionality as the PersonName transform, except that it replaces any non-null provider name with a random name taken from the configured name resources
+
+Options:
+* See PersonNameTransform for valid options
+
+
+Example:  De-indentify each provider name with defaults from the provided configuration files
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.ProviderTransform"
+}
+```
+
+**PersonAttributeTransform**
+
+Allows you to specify a List of valid replacements for one or more Person Attribute types, which will be randomly applied to all exported person attributes of those types
+
+Options:
+* **replacements** (required):  This should be a map from attribute type name to a List of possible replacement values
+
+Example:  De-indentify a variety of person attribute values as configured below:
+```
+{
+	"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAttributeTransform",
+	"replacements": {
+		"Race": [""],
+		"Birthplace": ["MA","NY","NJ","FL"],
+		"Boarding School": [""],
+		"Citizenship": ["USA"],
+		"Father's name": ["Adams","Banks","Ford","Green","Jones","King","Murphy","Price","Smith","Thomas"],
+		"Mother's Name": ["Bell","Carroll","Ellis","Faye","Kay","Madison","Pearl","Riley","Shelly","Taylor"],
+		"Health District": ["Middlesex","Suffolk","New York","Burlington","Monmouth","Union","Palm Beach"]
 	}
+}
+```
 
-ScrambleStatesInWorkflowTransform
+**ScrambleStatesInWorkflowTransform**
 
-	private Integer workflowToScramble;
-	private List<Integer> possibleStates;
+For a particular program workflow, this transform will randomize what state a user is associated with in that workflow.
 
-	{
-		"@class": "org.openmrs.contrib.databaseexporter.transform.ScrambleStatesInWorkflowTransform",
-		"workflowToScramble": 9,
-		"possibleStates": [247,248,249]
-	}
+Options:
+* **workflowToScramble** (required):  This is the primary key id for the program_workflow to scramble for patients
+* **possibleStates**: (optional): A List of valid states to use to scramble the workflow.  If not specified, all non-retired states for that workflow will be used
 
-UserTransform
+Example:  For the HIV Program Treatment Group workflow, scramble these values to that patients cannot be identified based on their assigned treatment group
+```
+{
+	"@class": "org.openmrs.contrib.databaseexporter.transform.ScrambleStatesInWorkflowTransform",
+	"workflowToScramble": 9,
+	"possibleStates": [247,248,249]
+}
+```
 
-	private List<Integer> usersToKeep;
-	private String systemIdReplacement;
-	private String usernameReplacement;
-	private String passwordReplacement;
+**UserTransform**
 
-	{
-		"usersToKeep": [1,24839,12],
-		"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
-		"systemIdReplacement": "${user_id}",
-		"usernameReplacement": "user${user_id}",
-		"passwordReplacement": "Test1234"
-	}
+Allows for setting the systemId, username, and password to particular expression replacement values for every user.  For any user configured in the usernamesToPreserve property, passwords will also be replaced, but systemId and username will be left intact.
+
+Options:
+* **systemIdReplacement** (optional):  An expression used to replace each systemId
+* **usernameReplacement**: (optional): An expression used to replace each username
+* **passwordReplacement**: (optional): An expression used to replace each password
+* **usernamesToPreserve**: (optional): An list of usernames for which the systemId and username replacements should not apply
+
+Example:  De-identify all users except for me, and replace everyone's password with a known value
+```
+{
+	"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+	"systemIdReplacement": "${userId}",
+	"usernameReplacement": "user${userId}",
+	"passwordReplacement": "Test1234",
+	"usernamesToPreserve": ["mseaton"]
+}
+```
