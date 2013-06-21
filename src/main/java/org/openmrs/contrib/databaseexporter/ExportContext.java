@@ -74,12 +74,12 @@ public class ExportContext {
 
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
 		try {
-			if (getConfiguration().isLogSql()) {
+			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("SQL: " + sql + (params != null && params.length > 0 ? " [" + Util.toString(params) + "]" : ""));
 			}
 			QueryRunner runner = new QueryRunner();
 			T result =  runner.query(connection, sql, handler, params);
-			if (getConfiguration().isLogSql()) {
+			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("RESULT: " + result);
 			}
 			return result;
@@ -94,7 +94,7 @@ public class ExportContext {
 	}
 
 	public void executeUpdate(String query) {
-		if (getConfiguration().isLogSql()) {
+		if (getConfiguration().getLogSql() == Boolean.TRUE) {
 			log("UPDATE: " + query);
 		}
 		QueryRunner qr = new QueryRunner();

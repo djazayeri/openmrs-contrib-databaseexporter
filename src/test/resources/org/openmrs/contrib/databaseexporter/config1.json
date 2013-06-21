@@ -1,0 +1,31 @@
+{
+	"sourceDatabaseCredentials": {
+		"url": "jdbc:mysql://localhost:3306/openmrs?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8",
+		"user": "openmrs",
+		"password": "openmrs"
+	},
+	"logSql": true,
+	"targetDirectory": "/home/mseaton/Desktop/databaseexport",
+	"tableFilter": {
+		"includeSchema": ["*"],
+		"includeData": ["*"]
+	},
+	"rowFilters": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter",
+			"queries": [
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery",
+					"userNames": ["mseaton"]
+				}
+			]
+		}
+	],
+	"rowTransforms": [
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+			"passwordReplacement": "Test1234",
+			"usernamesToPreserve": ["mseaton"]
+		}
+	]
+}

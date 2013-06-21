@@ -1,0 +1,21 @@
+{
+	"sourceDatabaseCredentials": {
+		"url": "jdbc:mysql://localhost:3306/openmrs_different?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8"
+	},
+	"tableFilter": {
+		"includeSchema": ["patient","user"],
+		"includeData": ["*"],
+		"excludeData": ["hl7_in_*"]
+	},
+	"rowFilters": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter",
+			"queries": [
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery",
+					"userNames": ["mseaton"]
+				}
+			]
+		}
+	]
+}

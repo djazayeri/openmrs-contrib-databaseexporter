@@ -45,51 +45,6 @@ public class Configuration {
 
 	public Configuration() {}
 
-	public static Configuration getDefaultConfiguration() {
-		return loadFromResource("org/openmrs/contrib/databaseexporter/defaultConfiguration.json");
-	}
-
-	public static Configuration loadFromResource(String resource) {
-		String json = Util.loadResource(resource);
-		return loadFromJson(json);
-	}
-
-	public static Configuration loadFromJson(String json) {
-		Configuration config;
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			config = mapper.readValue(json, Configuration.class);
-		}
-		catch (Exception e) {
-			throw new IllegalArgumentException("Unable to load configuration from JSON: " + json, e);
-		}
-		return config;
-	}
-
-	public void merge(Configuration config) {
-		if (config.getSourceDatabaseCredentials() != null) {
-			setSourceDatabaseCredentials(config.getSourceDatabaseCredentials());
-		}
-		if (config.getTargetDirectory() != null) {
-			setTargetDirectory(config.getTargetDirectory());
-		}
-		if (config.getLogSql() != null) {
-			setLogSql(config.getLogSql());
-		}
-		if (config.getTableFilter() != null) {
-			setTableFilter(config.getTableFilter());
-		}
-		if (config.getRowFilters().size() > 0) {
-			setRowFilters(config.getRowFilters());
-		}
-		if (config.getRowTransforms().size() > 0) {
-			setRowTransforms(config.getRowTransforms());
-		}
-		if (config.getDependencyFilters().size() > 0) {
-			setDependencyFilters(config.getDependencyFilters());
-		}
-	}
-
 	public File getOutputFile() {
 		String fileSuffix = Util.formatDate(new Date(), "yyyy_MM_dd_HH_mm");
 		String dir = getTargetDirectory();
@@ -108,6 +63,16 @@ public class Configuration {
 		return new File(dir, "export_"+ fileSuffix + ".log");
 	}
 
+	public String toString() {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			return mapper.writeValueAsString(this);
+		}
+		catch (Exception e) {
+			return super.toString();
+		}
+	}
+
 	//***** PROPERTY ACCESS *****
 
 	public String getTargetDirectory() {
@@ -124,10 +89,6 @@ public class Configuration {
 
 	public void setBatchSize(Integer batchSize) {
 		this.batchSize = batchSize;
-	}
-
-	public boolean isLogSql() {
-		return getLogSql() == Boolean.TRUE;
 	}
 
 	public Boolean getLogSql() {

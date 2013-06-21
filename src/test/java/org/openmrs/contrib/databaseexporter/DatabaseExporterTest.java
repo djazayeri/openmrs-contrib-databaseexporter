@@ -13,17 +13,15 @@
  */
 package org.openmrs.contrib.databaseexporter;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.lang.Exception;
 
 public class DatabaseExporterTest {
 
 	@Test
 	public void shouldTest() throws Exception {
-		DatabaseExporter.main(new String[]{"org/openmrs/contrib/databaseexporter/test.json"});
+		DatabaseExporter.main(new String[]{"org/openmrs/contrib/databaseexporter/configurations/example.json"});
 	}
 }
 

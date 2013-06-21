@@ -15,6 +15,10 @@ package org.openmrs.contrib.databaseexporter.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
+import org.openmrs.contrib.databaseexporter.Configuration;
 import org.openmrs.contrib.databaseexporter.TableRow;
 
 import java.io.File;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -235,6 +240,68 @@ public class Util {
 			}
 		}
 		return false;
+	}
+
+	public static Configuration loadFromResource(String resource) {
+		String json = Util.loadResource(resource);
+		return loadFromJson(json);
+	}
+
+	public static Configuration loadFromJson(String json) {
+		Configuration config;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			config = mapper.readValue(json, Configuration.class);
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException("Unable to load configuration from JSON: " + json, e);
+		}
+		return config;
+	}
+
+	public static Configuration loadConfiguration(String... resourceNames) {
+		return loadConfiguration(Arrays.asList(resourceNames));
+	}
+
+	public static Configuration loadConfiguration(List<String> resourceNames) {
+		ObjectMapper m = new ObjectMapper();
+		JsonNode configNode = null;
+		try {
+			for (String resourceName : resourceNames) {
+				String json = loadResource(resourceName);
+				JsonNode rootNode = m.readTree(json);
+				if (configNode == null) {
+					configNode = rootNode;
+				}
+				else {
+					configNode = merge(configNode, rootNode);
+				}
+			}
+			String json = m.writeValueAsString(configNode);
+			return m.readValue(json, Configuration.class);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Error parsing json configuration", e);
+		}
+	}
+
+	public static JsonNode merge(JsonNode mainNode, JsonNode updateNode) {
+		Iterator<String> fieldNames = updateNode.getFieldNames();
+		while (fieldNames.hasNext()) {
+			String fieldName = fieldNames.next();
+			JsonNode jsonNode = mainNode.get(fieldName);
+			if (jsonNode != null && jsonNode.isObject()) {
+				merge(jsonNode, updateNode.get(fieldName));
+			}
+			else {
+				if (mainNode instanceof ObjectNode) {
+					JsonNode value = updateNode.get(fieldName);
+					((ObjectNode) mainNode).put(fieldName, value);
+				}
+			}
+
+		}
+		return mainNode;
 	}
 }
 

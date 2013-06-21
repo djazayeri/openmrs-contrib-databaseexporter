@@ -31,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DatabaseExporter {
@@ -40,18 +41,18 @@ public class DatabaseExporter {
 	public static void main(String[] args) throws Exception {
 		// For now, we simply support the specification of a file path on the command line for the configuration file
 		if (args.length == 0) {
-			System.out.println("You must specify a single argument, which is the path to the configuration file.");
+			System.out.println("This command expects 1-N arguments referencing the configuration files it should load");
 			return;
 		}
-		Configuration config = loadConfiguration(args[0]);
+		Configuration config = loadConfiguration(args);
 		export(config);
 	}
 
-	public static Configuration loadConfiguration(String resource) {
-		Configuration config = Configuration.getDefaultConfiguration();
-		Configuration customConfig = Configuration.loadFromResource(resource);
-		config.merge(customConfig);
-		return config;
+	public static Configuration loadConfiguration(String... resources) {
+		List<String> resourceNames = new ArrayList<String>();
+		resourceNames.add("org/openmrs/contrib/databaseexporter/defaultConfiguration.json");
+		resourceNames.addAll(Arrays.asList(resources));
+		return Util.loadConfiguration(resourceNames);
 	}
 
 	public static void export(final Configuration configuration) throws Exception {
