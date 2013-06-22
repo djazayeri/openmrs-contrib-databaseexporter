@@ -24,17 +24,12 @@ public class DatabaseExporterTest {
 	@Test
 	public void shouldTest() throws Exception {
 		List<String> config = new ArrayList<String>();
-		config.add("rwanda/deidentifyPatients");
-		config.add("rwanda/deidentifyProviders");
-		config.add("rwanda/deidentifyUsers");
-		config.add("removeSyncData");
+		config.add("rwanda/deidentify");
 		config.add("rwanda/trimArchiveData");
-
+		config.add("removeSyncData");
 		config.add("removeAllPatients");
 		config.add("rwanda/trimUsers");
 		config.add("rwanda/trimProviders");
-
-
 		config.add("-localDbName=openmrs_rwink");
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");

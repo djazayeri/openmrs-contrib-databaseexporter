@@ -1,9 +1,0 @@
-{
-	"rowTransforms": [
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
-			"passwordReplacement": "Test1234",
-			"usernamesToPreserve": ["mseaton"]
-		}
-	]
-}

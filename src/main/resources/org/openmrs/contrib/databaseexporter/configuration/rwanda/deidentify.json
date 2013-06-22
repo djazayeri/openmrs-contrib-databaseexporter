@@ -10,6 +10,11 @@
 	},
 	"rowTransforms": [
 		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+			"passwordReplacement": "Test1234",
+			"usernamesToPreserve": ["mseaton"]
+		},
+		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
 			"replacements": {
 				"dataqualitytools.weeklyReport.emailTo": "",
@@ -83,6 +88,14 @@
 				"obs.value_text": "Value replaced during de-identification ${obs_id}",
 				"usagestatistics_usage.query": "",
 				"idgen_remote_source.url": "http://localhost:8080/openmrs"
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.ProviderTransform",
+			"scrambleName": true,
+			"identifierGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${provider_id}"
 			}
 		}
 	]
