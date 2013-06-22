@@ -59,7 +59,8 @@
 						{"tableName": "person_address", "idColumns": ["person_address_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 						{"tableName": "person_attribute", "idColumns": ["person_attribute_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
 					]
-				}
+				},
+				{"tableName": "users", "dependencies": []}
 			]
 		},
 		"users": {
