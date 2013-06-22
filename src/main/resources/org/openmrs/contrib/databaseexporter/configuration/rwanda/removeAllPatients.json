@@ -1,0 +1,13 @@
+{
+	"rowFilters": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientFilter",
+			"queries": [
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdQuery",
+					"ids": [1243]
+				}
+			]
+		}
+	]
+}

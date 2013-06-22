@@ -16,7 +16,11 @@ package org.openmrs.contrib.databaseexporter;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
+import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.filter.UserFilter;
 import org.openmrs.contrib.databaseexporter.util.Util;
+
+import java.util.List;
 
 public class UtilTest {
 
@@ -50,16 +54,22 @@ public class UtilTest {
 	public void shouldOverrideNestedValues() throws Exception {
 		Configuration configuration = getConfiguration();
 		Assert.assertTrue(configuration.getSourceDatabaseCredentials().getUrl().contains("openmrs_different"));
-		Assert.assertEquals(2, configuration.getTableFilter().getIncludeSchema().size());
-		Assert.assertEquals("patient", configuration.getTableFilter().getIncludeSchema().get(0));
 	}
 
 	@Test
-	public void shouldOverrideNestedLists() throws Exception {
+	public void shouldMergeLists() throws Exception {
 		Configuration configuration = getConfiguration();
-		Assert.assertEquals(2, configuration.getRowFilters().size());
-		Assert.assertEquals(PatientFilter.class, configuration.getRowFilters().get(0).getClass());
-		Assert.assertEquals(4, configuration.getRowTransforms().size());
+
+		List<String> excludeData = configuration.getTableFilter().getExcludeData();
+		Assert.assertEquals(2, excludeData.size());
+		Assert.assertEquals("hl7_in_*", excludeData.get(0));
+		Assert.assertEquals("sync_*", excludeData.get(1));
+
+		List<RowFilter> rowFilters = configuration.getRowFilters();
+		Assert.assertEquals(2, rowFilters.size());
+		Assert.assertEquals(UserFilter.class, rowFilters.get(0).getClass());
+		Assert.assertEquals(PatientFilter.class, rowFilters.get(1).getClass());
+		Assert.assertEquals(5, configuration.getRowTransforms().size());
 	}
 }
 

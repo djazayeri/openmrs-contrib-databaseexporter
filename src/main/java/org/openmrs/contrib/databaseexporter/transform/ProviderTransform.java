@@ -15,19 +15,20 @@ package org.openmrs.contrib.databaseexporter.transform;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
+import org.openmrs.contrib.databaseexporter.generator.IdentifierGenerator;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.List;
 
 /**
- * De-identifies the user table
+ * De-identifies the provider table
  */
 public class ProviderTransform extends PersonNameTransform {
 
 	//***** PROPERTIES *****
 
 	private boolean scrambleName = false;
-	// TODO: private IdentifierGenerator = null;
+	private IdentifierGenerator identifierGenerator;
 
 	//***** CONSTRUCTORS *****
 
@@ -50,6 +51,9 @@ public class ProviderTransform extends PersonNameTransform {
 				String s = Util.getRandomElementFromList(givenNameList) + " " + Util.getRandomElementFromList(familyNameList);
 				row.setRawValue("name", s);
 			}
+			if (Util.notEmpty(row.getRawValue("identifier")) && identifierGenerator != null) {
+				row.setRawValue("identifier", identifierGenerator.generateIdentifier(row, context));
+			}
 		}
 
 		return true;
@@ -63,5 +67,13 @@ public class ProviderTransform extends PersonNameTransform {
 
 	public void setScrambleName(boolean scrambleName) {
 		this.scrambleName = scrambleName;
+	}
+
+	public IdentifierGenerator getIdentifierGenerator() {
+		return identifierGenerator;
+	}
+
+	public void setIdentifierGenerator(IdentifierGenerator identifierGenerator) {
+		this.identifierGenerator = identifierGenerator;
 	}
 }

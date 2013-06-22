@@ -29,6 +29,8 @@ import java.util.Map;
 
 public class Configuration {
 
+	public static final String CONFIG_PATH = "org/openmrs/contrib/databaseexporter/configuration/";
+
 	//***** PROPERTIES *****
 
 	private DatabaseCredentials sourceDatabaseCredentials;

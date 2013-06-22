@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.openmrs.contrib.databaseexporter.Configuration;
 import org.openmrs.contrib.databaseexporter.TableRow;
@@ -121,11 +122,19 @@ public class Util {
 				contents = IOUtils.toString(is, "UTF-8");
 			}
 			catch (Exception e) {
-				System.out.println("ERROR: " + e);
 			}
 			finally {
 				IOUtils.closeQuietly(is);
 			}
+		}
+
+		// If that didn't work, try again from known classpath configuration director
+		if (contents == null && !path.startsWith(Configuration.CONFIG_PATH)) {
+			String newPath = Configuration.CONFIG_PATH + path;
+			if (!newPath.endsWith(".json")) {
+				newPath += ".json";
+			}
+			return loadResource(newPath);
 		}
 
 		if (contents == null) {
@@ -295,8 +304,20 @@ public class Util {
 			}
 			else {
 				if (mainNode instanceof ObjectNode) {
-					JsonNode value = updateNode.get(fieldName);
-					((ObjectNode) mainNode).put(fieldName, value);
+					JsonNode existingValue = mainNode.get(fieldName);
+					JsonNode newValue = updateNode.get(fieldName);
+					if (existingValue instanceof ArrayNode || newValue instanceof  ArrayNode) {
+						ArrayNode curr = (ArrayNode)existingValue;
+						ArrayNode newArray = (ArrayNode)newValue;
+						if (curr == null) {
+							curr = newArray;
+						}
+						else {
+							curr.addAll(newArray);
+						}
+						newValue = curr;
+					}
+					((ObjectNode) mainNode).put(fieldName, newValue);
 				}
 			}
 

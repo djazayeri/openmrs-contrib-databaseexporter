@@ -23,6 +23,7 @@ public class TableConfig {
 	private TableMetadata tableMetadata;
 	private boolean exportSchema = true;
 	private boolean exportData = true;
+	private int numRowsExported = 0;
 
 	//***** CONSTRUCTORS *****
 
@@ -54,5 +55,13 @@ public class TableConfig {
 
 	public void setExportData(boolean exportData) {
 		this.exportData = exportData;
+	}
+
+	public int getNumRowsExported() {
+		return numRowsExported;
+	}
+
+	public void incrementRowsExported() {
+		this.numRowsExported++;
 	}
 }

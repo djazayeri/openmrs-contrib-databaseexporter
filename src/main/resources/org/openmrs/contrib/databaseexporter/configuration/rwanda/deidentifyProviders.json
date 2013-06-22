@@ -1,0 +1,13 @@
+{
+	"rowTransforms": [
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.ProviderTransform",
+			"scrambleName": true,
+			"identifierGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${provider_id}"
+			}
+		}
+	]
+
+}

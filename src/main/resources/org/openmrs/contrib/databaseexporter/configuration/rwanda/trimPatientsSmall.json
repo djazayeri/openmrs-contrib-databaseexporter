@@ -1,9 +1,4 @@
 {
-	"targetDirectory": "/home/mseaton/Desktop/databaseexportmod",
-
-	"tableFilter": {
-		"excludeData": ["sync_*"]
-	},
 	"rowFilters": [
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientFilter",
@@ -45,20 +40,6 @@
 					"numberDead": 3
 				}
 			]
-		}
-	],
-	"rowTransforms": [
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaLocationTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonNameTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform"
 		}
 	]
 }

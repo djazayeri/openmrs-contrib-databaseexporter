@@ -1,9 +1,6 @@
 {
 	"batchSize":10000,
-	"tableFilter": {
-		"includeSchema": ["*"],
-		"includeData": ["*"]
-	},
+	"targetDirectory": ".",
 	"dependencyFilters": {
 		"patient": {
 			"tableName": "patient",
@@ -16,12 +13,12 @@
 				{"tableName": "visit_attribute", "idColumns": ["visit_attribute_id"], "joinTable": "visit", "childColumn": "visit_id", "parentColumn": "visit_id"},
 				{"tableName": "encounter", "idColumns": ["encounter_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
 				{"tableName": "encounter_provider", "idColumns": ["encounter_provider_id"], "joinTable": "encounter", "childColumn": "encounter_id", "parentColumn": "encounter_id"},
-				{"tableName": "obs", "idColumns": ["obs_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
+				{"tableName": "obs", "idColumns": ["obs_id"], "joinTable": "patient", "childColumn": "person_id", "parentColumn": "patient_id"},
 				{"tableName": "orders", "idColumns": ["order_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
 				{"tableName": "drug_order", "idColumns": ["order_id"], "joinTable": "orders", "childColumn": "order_id", "parentColumn": "order_id"},
 				{"tableName": "patient_program", "idColumns": ["patient_program_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
 				{"tableName": "patient_state", "idColumns": ["patient_state_id"], "joinTable": "patient_program", "childColumn": "patient_program_id", "parentColumn": "patient_program_id"},
-				{"tableName": "active_list", "idColumns": ["active_list_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
+				{"tableName": "active_list", "idColumns": ["active_list_id"], "joinTable": "patient", "childColumn": "person_id", "parentColumn": "patient_id"},
 				{"tableName": "active_list_problem", "idColumns": ["active_list_id"], "joinTable": "active_list", "childColumn": "active_list_id", "parentColumn": "active_list_id"},
 				{"tableName": "active_list_allergy", "idColumns": ["active_list_id"], "joinTable": "active_list", "childColumn": "active_list_id", "parentColumn": "active_list_id"},
 				{"tableName": "note", "idColumns": ["note_id"], "joinTable": "patient", "childColumn": "patient_id", "parentColumn": "patient_id"},
@@ -43,19 +40,26 @@
 				{"tableName": "person_name", "idColumns": ["person_name_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_address", "idColumns": ["person_address_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "person_attribute", "idColumns": ["person_attribute_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
-				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id"], "joinTable": "person", "childColumn": "winner_person_id", "parentColumn": "person_id"},
-				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id"], "joinTable": "person", "childColumn": "loser_person_id", "parentColumn": "person_id"},
+				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id","winner_person_id"], "joinTable": "person", "childColumn": "winner_person_id", "parentColumn": "person_id"},
+				{"tableName": "person_merge_log", "idColumns": ["person_merge_log_id","loser_person_id"], "joinTable": "person", "childColumn": "loser_person_id", "parentColumn": "person_id"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "person_merge_log", "childColumn": "person_id", "parentColumn": "winner_person_id"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "person_merge_log", "childColumn": "person_id", "parentColumn": "loser_person_id"},
-				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
-				{"tableName": "relationship", "idColumns": ["relationship_id"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
+				{"tableName": "relationship", "idColumns": ["relationship_id","person_a"], "joinTable": "person", "childColumn": "person_a", "parentColumn": "person_id"},
+				{"tableName": "relationship", "idColumns": ["relationship_id","person_b"], "joinTable": "person", "childColumn": "person_b", "parentColumn": "person_id"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "relationship", "childColumn": "person_id", "parentColumn": "person_a"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "relationship", "childColumn": "person_id", "parentColumn": "person_b"},
 				{"tableName": "users", "idColumns": ["user_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
 			],
 			"dependencies": [
-				{"tableName": "person", "dependencies": []},
-				{"tableName": "users", "dependencies": []}
+				{
+					"tableName": "person",
+					"dependencies": [],
+					"subQueries": [
+						{"tableName": "person_name", "idColumns": ["person_name_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
+						{"tableName": "person_address", "idColumns": ["person_address_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"},
+						{"tableName": "person_attribute", "idColumns": ["person_attribute_id"], "joinTable": "person", "childColumn": "person_id", "parentColumn": "person_id"}
+					]
+				}
 			]
 		},
 		"users": {
@@ -78,7 +82,7 @@
 			"tableName": "provider",
 			"idColumns": ["provider_id"],
 			"subQueries": [
-				{"tableName": "provider", "idColumns": ["provider_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
+				{"tableName": "provider", "idColumns": ["provider_id","person_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"},
 				{"tableName": "person", "idColumns": ["person_id"], "joinTable": "provider", "childColumn": "person_id", "parentColumn": "person_id"},
 				{"tableName": "provider_attribute", "idColumns": ["provider_attribute_id"], "joinTable": "provider", "childColumn": "provider_id", "parentColumn": "provider_id"}
 			],

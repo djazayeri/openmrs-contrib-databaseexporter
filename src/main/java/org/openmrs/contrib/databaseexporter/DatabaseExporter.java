@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.IOUtils;
+import org.openmrs.contrib.databaseexporter.filter.DependencyFilter;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
@@ -31,8 +32,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseExporter {
 
@@ -44,15 +46,48 @@ public class DatabaseExporter {
 			System.out.println("This command expects 1-N arguments referencing the configuration files it should load");
 			return;
 		}
-		Configuration config = loadConfiguration(args);
-		export(config);
-	}
-
-	public static Configuration loadConfiguration(String... resources) {
 		List<String> resourceNames = new ArrayList<String>();
-		resourceNames.add("org/openmrs/contrib/databaseexporter/defaultConfiguration.json");
-		resourceNames.addAll(Arrays.asList(resources));
-		return Util.loadConfiguration(resourceNames);
+		resourceNames.add("defaults");
+
+		Map<String, String> overrides = new HashMap<String, String>();
+		for (String arg : args) {
+			if (arg.startsWith("-")) {
+				String[] split = arg.substring(1).split("\\=");
+				overrides.put(split[0].trim(), split[1].trim());
+			}
+			else {
+				resourceNames.add(arg);
+			}
+		}
+
+		Configuration config = Util.loadConfiguration(resourceNames);
+
+		for (String key : overrides.keySet()) {
+			String val = overrides.get(key);
+			if (key.equals("user")) {
+				config.getSourceDatabaseCredentials().setUser(val);
+			}
+			else if (key.equals("password")) {
+				config.getSourceDatabaseCredentials().setPassword(val);
+			}
+			else if (key.equals("url")) {
+				config.getSourceDatabaseCredentials().setUrl(val);
+			}
+			else if (key.equals("localDbName")) {
+				config.getSourceDatabaseCredentials().setUrl("jdbc:mysql://localhost:3306/" + val + "?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8");
+			}
+			else if (key.equals("targetDirectory")) {
+				config.setTargetDirectory(val);
+			}
+			else if (key.equals("logSql")) {
+				config.setLogSql("true".equals(val));
+			}
+			else {
+				throw new RuntimeException("Unable to set property <" + key + "> outside of configuration files.");
+			}
+		}
+
+		export(config);
 	}
 
 	public static void export(final Configuration configuration) throws Exception {
@@ -83,6 +118,11 @@ public class DatabaseExporter {
 				for (RowFilter filter : configuration.getRowFilters()) {
 					context.log("Applying filter: " + filter.getClass().getSimpleName());
 					filter.filter(context);
+				}
+				for (RowFilter filter : configuration.getRowFilters()) {
+					for (DependencyFilter df : filter.getDependencyFilters()) {
+						df.filter(context);
+					}
 				}
 
 				ListMap<String, RowTransform> tableTransforms = new ListMap<String, RowTransform>(true);
@@ -205,7 +245,13 @@ public class DatabaseExporter {
 
 			context.log("Exporting Database Completed");
 
-			System.out.println("Export completed in: " + Util.formatTimeDifference(context.getEventLog().getTotalTime()));
+			context.log("***** Summary Data *****");
+			for (final String table : context.getTableData().keySet()) {
+				TableConfig tableConfig = context.getTableData().get(table);
+				context.log(tableConfig.getTableMetadata().getTableName() + ": " + tableConfig.getNumRowsExported());
+			}
+			context.log("**************************");
+			context.log("Export completed in: " + Util.formatTimeDifference(context.getEventLog().getTotalTime()));
 
 			out.flush();
 		}

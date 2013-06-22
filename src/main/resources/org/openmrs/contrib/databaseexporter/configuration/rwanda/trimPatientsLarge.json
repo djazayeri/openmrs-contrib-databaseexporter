@@ -1,16 +1,11 @@
 {
-	"targetDirectory": "/home/mseaton/Desktop/databaseexportmod",
-
-	"tableFilter": {
-		"excludeData": ["sync_*"]
-	},
 	"rowFilters": [
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientFilter",
 			"queries": [
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientAgeQuery",
-					"numberPerAgeRange": 3,
+					"numberPerAgeRange": 100,
 					"ageRanges": [
 						{"maxAge": 2},
 						{"minAge": 3, "maxAge": 10},
@@ -22,43 +17,29 @@
 				},
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientEncounterQuery",
-					"numberPerType": 3,
-					"numberPerForm": 3,
+					"numberPerType": 50,
+					"numberPerForm": 50,
 					"order": "NUM_OBS_DESC"
 				},
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientProgramEnrollmentQuery",
-					"numberActivePerProgram": 3,
-					"numberCompletedPerProgram": 3
+					"numberActivePerProgram": 100,
+					"numberCompletedPerProgram": 50
 				},
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientRelationshipQuery",
-					"numberPerType": 3
+					"numberPerType": 50
 				},
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdentifierQuery",
-					"numberPerType": 3
+					"numberPerType": 100
 				},
 				{
 					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientVitalStatusQuery",
-					"numberAlive": 3,
-					"numberDead": 3
+					"numberAlive": 100,
+					"numberDead": 100
 				}
 			]
-		}
-	],
-	"rowTransforms": [
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaLocationTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonNameTransform"
-		},
-		{
-			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform"
 		}
 	]
 }

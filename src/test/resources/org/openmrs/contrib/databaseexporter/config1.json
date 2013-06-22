@@ -6,10 +6,6 @@
 	},
 	"logSql": true,
 	"targetDirectory": "/home/mseaton/Desktop/databaseexport",
-	"tableFilter": {
-		"includeSchema": ["*"],
-		"includeData": ["*"]
-	},
 	"rowFilters": [
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter",

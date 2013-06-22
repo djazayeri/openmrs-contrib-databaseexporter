@@ -1,0 +1,18 @@
+{
+	"tableFilter": {
+		"excludeData": [
+			"formentry*", "hl7_in_*", "idgen_log_entry",
+			"metadatasharing_*", "person_merge_log",
+			"sync_import", "sync_record", "sync_server_record"
+		]
+	},
+	"rowTransforms": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
+			"replacements": {
+				"form.xslt": "Values removed during database export",
+				"form.template": "Values removed during database export"
+			}
+		}
+	]
+}

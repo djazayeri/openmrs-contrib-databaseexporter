@@ -1,0 +1,17 @@
+{
+	"tableFilter": {
+		"excludeData": [
+			"sync_import", "sync_record", "sync_server_record", "user_property", "sync_server","sync_server_class"
+		]
+	},
+	"rowTransforms": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
+			"replacements": {
+				"sync.admin_email": "",
+				"sync.server_name": "",
+				"sync.server_uuid": ""
+			}
+		}
+	]
+}

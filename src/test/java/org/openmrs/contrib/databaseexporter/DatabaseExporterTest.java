@@ -16,12 +16,31 @@ package org.openmrs.contrib.databaseexporter;
 import org.junit.Test;
 
 import java.lang.Exception;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseExporterTest {
 
 	@Test
 	public void shouldTest() throws Exception {
-		DatabaseExporter.main(new String[]{"org/openmrs/contrib/databaseexporter/configurations/example.json"});
+		List<String> config = new ArrayList<String>();
+		config.add("rwanda/deidentifyPatients");
+		config.add("rwanda/deidentifyProviders");
+		config.add("rwanda/deidentifyUsers");
+		config.add("rwanda/removeSyncData");
+		config.add("rwanda/trimArchiveData");
+
+		config.add("rwanda/removeAllPatients");
+		config.add("rwanda/trimUsers");
+		config.add("rwanda/trimProviders");
+
+
+		config.add("-localDbName=openmrs_rwink");
+		config.add("-user=openmrs");
+		config.add("-password=openmrs");
+		config.add("-logSql=true");
+
+		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 }
 

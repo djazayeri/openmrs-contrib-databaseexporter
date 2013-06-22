@@ -1,0 +1,89 @@
+{
+	"tableFilter": {
+		"excludeData": [
+			"cohort", "cohort_member", "dataquality_tally",
+			"formentry*", "hl7_in_*", "idgen_log_entry",
+			"metadatasharing_*", "name_phonetics", "person_merge_log",
+			"report_object", "report_schema_xml",
+			"sync_import", "sync_record", "sync_server_record", "user_property"
+		]
+	},
+	"rowTransforms": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
+			"replacements": {
+				"dataqualitytools.weeklyReport.emailTo": "",
+				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
+				"namephonetics.familyNameStringEncoder": "Double Metaphone",
+				"registration.defaultLocationCode": "XXX",
+				"scheduler.password": "Test1234",
+				"sync.admin_email": "",
+				"sync.server_name": "TEST",
+				"sync.server_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeee"
+			}
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAttributeTransform",
+			"replacements": {
+				"Race": [""],
+				"Birthplace": ["MA","NY","NJ","FL"],
+				"Boarding School": [""],
+				"Citizenship": ["USA"],
+				"Father's name": ["Adams","Banks","Ford","Green","Jones","King","Murphy","Price","Smith","Thomas"],
+				"Mother's Name": ["Bell","Carroll","Ellis","Faye","Kay","Madison","Pearl","Riley","Shelly","Taylor"],
+				"Health District": ["Middlesex","Suffolk","New York","Burlington","Monmouth","Union","Palm Beach"]
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform",
+			"defaultGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${patient_identifier_id}"
+			},
+			"replacementGenerators": {
+				"Rwanda National ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.SequentialGenerator",
+					"firstIdentifierBase": "0000000001",
+					"baseCharacterSet": "0123456789"
+				},
+				"IMB ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.VerhoeffGenerator",
+					"firstIdentifierBase": "90100000",
+					"baseCharacterSet": "0123456789"
+				},
+				"IMB Primary Care Registration ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.LuhnGenerator",
+					"firstIdentifierBase": "00001",
+					"baseCharacterSet": "0123456789ACEFHJKMNPUWXY",
+					"prefix": "XXX",
+					"checkDigitSeparator": "-"
+				}
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaLocationTransform"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonNameTransform"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.RwandaAddressHierarchyTransform"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.ScrambleStatesInWorkflowTransform",
+			"workflowToScramble": 9,
+			"possibleStates": [247,248,249]
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
+			"replacements": {
+				"obs.value_text": "Value replaced during de-identification ${obs_id}",
+				"usagestatistics_usage.query": "",
+				"idgen_remote_source.url": "http://localhost:8080/openmrs"
+			}
+		}
+	]
+}

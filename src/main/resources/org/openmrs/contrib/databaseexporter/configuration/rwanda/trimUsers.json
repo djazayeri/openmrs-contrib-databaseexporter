@@ -1,0 +1,13 @@
+{
+	"rowFilters": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter",
+			"queries": [
+				{
+					"@class" : "org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery",
+					"userNames": ["mseaton"]
+				}
+			]
+		}
+	]
+}

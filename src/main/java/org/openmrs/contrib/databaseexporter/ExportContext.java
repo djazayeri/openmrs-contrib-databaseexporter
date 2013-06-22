@@ -110,35 +110,31 @@ public class ExportContext {
 		if (ids != null) {
 			Set<Integer> toInsert = new HashSet<Integer>(ids);
 			toInsert.remove(null);
+
+			String tableAndColumn = sourceTable + "." + sourceColumn;
+			String tempTableName = temporaryTableSet.get(tableAndColumn);
+			if (tempTableName == null) {
+				tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
+				log("Preparing temporary table " + tempTableName);
+				executeUpdate("create temporary table " + tempTableName + " (id integer not null primary key)");
+				temporaryTableSet.put(tableAndColumn, tempTableName);
+			}
+
+			toInsert.removeAll(executeIdQuery("select id from " + tempTableName));
+
 			if (!toInsert.isEmpty()) {
-
-				String tableAndColumn = sourceTable + "." + sourceColumn;
-				String tempTableName = temporaryTableSet.get(tableAndColumn);
-				if (tempTableName == null) {
-					tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
-					log("Preparing temporary table " + tempTableName);
-					executeUpdate("create temporary table " + tempTableName + " (id integer not null primary key)");
-					temporaryTableSet.put(tableAndColumn, tempTableName);
-				}
-
-
-				toInsert.removeAll(executeIdQuery("select id from " + tempTableName));
-
-
-				if (!toInsert.isEmpty()) {
-					log("Adding " + toInsert.size() + " values");
-					StringBuilder insert = new StringBuilder("insert into " + tempTableName + " (id) values ");
-					for (Iterator<Integer> i = toInsert.iterator(); i.hasNext();) {
-						Integer id = i.next();
-						if (id != null) {
-							insert.append("(").append(id).append(")");
-							if (i.hasNext()) {
-								insert.append(",");
-							}
+				log("Adding " + toInsert.size() + " values to " + tempTableName);
+				StringBuilder insert = new StringBuilder("insert into " + tempTableName + " (id) values ");
+				for (Iterator<Integer> i = toInsert.iterator(); i.hasNext();) {
+					Integer id = i.next();
+					if (id != null) {
+						insert.append("(").append(id).append(")");
+						if (i.hasNext()) {
+							insert.append(",");
 						}
 					}
-					executeUpdate(insert.toString());
 				}
+				executeUpdate(insert.toString());
 			}
 		}
 	}

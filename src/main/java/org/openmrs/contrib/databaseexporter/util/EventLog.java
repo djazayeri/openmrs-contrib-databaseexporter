@@ -38,11 +38,7 @@ public class EventLog {
 		String s = new Date() + ": " + event;
 		System.out.println(s);
 		try {
-			s = FileUtils.readFileToString(logFile) + System.getProperty("line.separator") + s;
-		}
-		catch (Exception e) {}
-		try {
-			FileUtils.writeStringToFile(logFile, s, "UTF-8");
+			FileUtils.writeStringToFile(logFile, s + System.getProperty("line.separator"), "UTF-8", true);
 		}
 		catch (Exception e) {}
 		lastTime = currentTime;

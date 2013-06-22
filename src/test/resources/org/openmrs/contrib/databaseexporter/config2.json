@@ -6,16 +6,5 @@
 		"includeSchema": ["patient","user"],
 		"includeData": ["*"],
 		"excludeData": ["hl7_in_*"]
-	},
-	"rowFilters": [
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter",
-			"queries": [
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery",
-					"userNames": ["mseaton"]
-				}
-			]
-		}
-	]
+	}
 }

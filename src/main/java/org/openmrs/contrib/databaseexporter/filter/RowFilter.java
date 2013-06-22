@@ -33,6 +33,7 @@ public abstract class RowFilter {
 	//***** PROPERTIES *****
 
 	private List<RowTransform> transforms;
+	private List<DependencyFilter> dependencyFilters;
 
 	//***** INSTANCE METHODS *****
 
@@ -55,15 +56,13 @@ public abstract class RowFilter {
 			if (l != null) {
 				Set<Integer> s = new HashSet<Integer>(l);
 				s.remove(null);
-				if (s.size() > 0) {
-					context.registerInTemporaryTable(getTableName(), column, ids.get(column));
-					getTransforms().add(new ForeignKeyTransform(getTableName(), column));
-					DependencyFilter df = context.getConfiguration().getDependencyFilters().get(getTableName());
-					if (df == null) {
-						throw new RuntimeException("You must specify a dependency filter for any tables that you are applying row filters to");
-					}
-					df.filter(context);
+				context.registerInTemporaryTable(getTableName(), column, s);
+				getTransforms().add(new ForeignKeyTransform(getTableName(), column));
+				DependencyFilter df = context.getConfiguration().getDependencyFilters().get(getTableName());
+				if (df == null) {
+					throw new RuntimeException("You must specify a dependency filter for any tables that you are applying row filters to");
 				}
+				getDependencyFilters().add(df);
 			}
 		}
 	}
@@ -83,5 +82,16 @@ public abstract class RowFilter {
 
 	public void setTransforms(List<RowTransform> transforms) {
 		this.transforms = transforms;
+	}
+
+	public List<DependencyFilter> getDependencyFilters() {
+		if (dependencyFilters == null) {
+			dependencyFilters = new ArrayList<DependencyFilter>();
+		}
+		return dependencyFilters;
+	}
+
+	public void setDependencyFilters(List<DependencyFilter> dependencyFilters) {
+		this.dependencyFilters = dependencyFilters;
 	}
 }

@@ -230,6 +230,7 @@ public class DbUtil {
 			}
 		}
 		context.getWriter().print(")");
+		context.getTableData().get(row.getTableName()).incrementRowsExported();
 	}
 
 	/**
