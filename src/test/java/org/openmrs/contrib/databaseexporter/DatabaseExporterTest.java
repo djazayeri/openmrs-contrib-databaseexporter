@@ -27,10 +27,10 @@ public class DatabaseExporterTest {
 		config.add("rwanda/deidentifyPatients");
 		config.add("rwanda/deidentifyProviders");
 		config.add("rwanda/deidentifyUsers");
-		config.add("rwanda/removeSyncData");
+		config.add("removeSyncData");
 		config.add("rwanda/trimArchiveData");
 
-		config.add("rwanda/removeAllPatients");
+		config.add("removeAllPatients");
 		config.add("rwanda/trimUsers");
 		config.add("rwanda/trimProviders");
 
