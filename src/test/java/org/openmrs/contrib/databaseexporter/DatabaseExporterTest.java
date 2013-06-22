@@ -22,7 +22,7 @@ import java.util.List;
 public class DatabaseExporterTest {
 
 	@Test
-	public void shouldTest() throws Exception {
+	public void shouldExportMinimumData() throws Exception {
 		List<String> config = new ArrayList<String>();
 		config.add("rwanda/deidentify");
 		config.add("rwanda/trimArchiveData");
@@ -34,7 +34,16 @@ public class DatabaseExporterTest {
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");
 		config.add("-logSql=true");
+		DatabaseExporter.main(config.toArray(new String[] {}));
+	}
 
+	@Test
+	public void shouldExportMaximumData() throws Exception {
+		List<String> config = new ArrayList<String>();
+		config.add("-localDbName=openmrs_rwink");
+		config.add("rwanda/trimArchiveData");
+		config.add("-user=openmrs");
+		config.add("-password=openmrs");
 		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 }
