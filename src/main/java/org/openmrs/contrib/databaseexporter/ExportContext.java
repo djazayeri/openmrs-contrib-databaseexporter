@@ -21,6 +21,7 @@ import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,7 +78,13 @@ public class ExportContext {
 			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("SQL: " + sql + (params != null && params.length > 0 ? " [" + Util.toString(params) + "]" : ""));
 			}
-			QueryRunner runner = new QueryRunner();
+			QueryRunner runner = new QueryRunner() {
+				protected PreparedStatement prepareStatement(Connection conn, String sql) throws SQLException {
+					PreparedStatement ps = super.prepareStatement(conn, sql);
+					ps.setFetchSize(Integer.MIN_VALUE);
+					return ps;
+				}
+			};
 			T result =  runner.query(connection, sql, handler, params);
 			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("RESULT: " + result);
