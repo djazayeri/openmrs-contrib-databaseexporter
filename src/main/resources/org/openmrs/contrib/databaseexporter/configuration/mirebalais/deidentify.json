@@ -1,5 +1,4 @@
 {
-	"logSql": true,
 	"tableFilter": {
 		"excludeData": [
 			"cohort", "cohort_member", "hl7_in_*", "idgen_log_entry", "name_phonetics", "person_merge_log",
