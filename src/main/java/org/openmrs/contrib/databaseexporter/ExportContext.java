@@ -132,7 +132,7 @@ public class ExportContext {
 			if (tempTableName == null) {
 				tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
 				log("Preparing temporary table " + tempTableName);
-				executeUpdate("create temporary table " + tempTableName + " (id integer not null primary key)");
+				executeUpdate("create table " + tempTableName + " (id integer not null primary key)");
 				temporaryTableSet.put(tableAndColumn, tempTableName);
 			}
 
@@ -189,7 +189,7 @@ public class ExportContext {
 	public void cleanupTemporaryTables() {
 		for (String tableName : temporaryTableSet.values()) {
 			if (tableName.startsWith(TEMPORARY_TABLE_PREFIX)) {
-				executeUpdate("drop temporary table " + tableName);
+				executeUpdate("drop table " + tableName);
 			}
 		}
 		temporaryTableSet.clear();
