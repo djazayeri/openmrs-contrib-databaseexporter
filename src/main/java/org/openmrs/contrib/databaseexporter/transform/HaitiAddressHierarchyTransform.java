@@ -22,13 +22,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This replaces the address_hierarchy table with contents based on the configured addresses file
  */
 public class HaitiAddressHierarchyTransform extends StructuredAddressTransform {
 
-	private List<String> hierarchyLevels = Arrays.asList("country","state_province","city_village","address3","address2","address1");
+	private List<String> hierarchyLevels = Arrays.asList("country","state_province","city_village","address3","address1","address2");
 
 	//***** CONSTRUCTORS *****
 
@@ -74,6 +75,7 @@ public class HaitiAddressHierarchyTransform extends StructuredAddressTransform {
 						row.addColumnValue("latitude", Types.DOUBLE, null);
 						row.addColumnValue("longitude", Types.DOUBLE, null);
 						row.addColumnValue("elevation", Types.DOUBLE, null);
+						row.addColumnValue("uuid", Types.VARCHAR, UUID.randomUUID().toString());
 						rows.add(row);
 					}
 				}
