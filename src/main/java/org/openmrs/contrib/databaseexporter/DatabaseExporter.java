@@ -95,7 +95,7 @@ public class DatabaseExporter {
 		FileOutputStream fos = null;
 		Connection connection = null;
 		try {
-			connection = DbUtil.openConnection(configuration.getSourceDatabaseCredentials());
+			connection = DbUtil.openConnection(configuration);
 
 			if (configuration.getTargetDirectory() != null) {
 				File f = new File(configuration.getTargetDirectory());
@@ -109,7 +109,7 @@ public class DatabaseExporter {
 			OutputStreamWriter osWriter = new OutputStreamWriter(fos, "UTF-8");
 			PrintWriter out = new PrintWriter(osWriter);
 
-			final ExportContext context = new ExportContext(configuration, connection, out);
+			final ExportContext context = new ExportContext(configuration, out);
 			context.log("Context initialized");
 
 			DbUtil.writeExportHeader(context);

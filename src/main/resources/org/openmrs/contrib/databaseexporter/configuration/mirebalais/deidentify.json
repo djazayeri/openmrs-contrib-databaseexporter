@@ -1,0 +1,79 @@
+{
+	"logSql": true,
+	"tableFilter": {
+		"excludeData": [
+			"cohort", "cohort_member", "hl7_in_*", "idgen_log_entry", "name_phonetics", "person_merge_log",
+			"emr_paper_record_request","emr_paper_record_merge_request",
+			"notification_alert", "notification_alert_recipient",
+			"pacsintegration_outbound_queue", "patientregistration_user_activity"
+		]
+	},
+	"rowTransforms": [
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+			"passwordReplacement": "Test1234",
+			"usernamesToPreserve": ["mseaton","scheduler"]
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
+			"replacements": {
+				"pacsintegration.listenerUsername": "test",
+				"pacsintegration.listenerPassword": "test",
+				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
+				"namephonetics.familyNameStringEncoder": "Double Metaphone",
+				"scheduler.password": "Test1234"
+			}
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.PersonAttributeTransform",
+			"replacements": {
+				"Telephone Number": ["888-${person_attribute_id}-${person_id}"]
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonNameTransform"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.PersonAddressTransform",
+			"addressPath": "org/openmrs/contrib/databaseexporter/configuration/mirebalais/addresses.config"
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.HaitiAddressHierarchyTransform"
+		},
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
+			"replacements": {
+				"obs.value_text": "Value replaced during de-identification ${obs_id}",
+				"test_order.clinical_history": "Value replaced during de-identification ${order_id}"
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.ProviderTransform",
+			"scrambleName": true,
+			"identifierGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${provider_id}"
+			}
+		},
+		{
+			"@class": "org.openmrs.contrib.databaseexporter.transform.IdentifierTransform",
+			"defaultGenerator": {
+				"@class" : "org.openmrs.contrib.databaseexporter.generator.SimpleReplacementGenerator",
+				"replacement": "${patient_identifier_id}"
+			},
+			"replacementGenerators": {
+				"Nimewo Dosye": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.SequentialGenerator",
+					"firstIdentifierBase": "999001",
+					"prefix": "A",
+					"baseCharacterSet": "0123456789"
+				},
+				"ZL EMR ID": {
+					"@class" : "org.openmrs.contrib.databaseexporter.generator.LuhnGenerator",
+					"firstIdentifierBase": "00001",
+					"baseCharacterSet": "0123456789ACEFHJKMNPUWXY"
+				}
+			}
+		}
+	]
+}

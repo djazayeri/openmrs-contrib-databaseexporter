@@ -16,6 +16,7 @@ package org.openmrs.contrib.databaseexporter;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.openmrs.contrib.databaseexporter.util.DbUtil;
 import org.openmrs.contrib.databaseexporter.util.EventLog;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
@@ -40,16 +41,14 @@ public class ExportContext {
 	//***** PROPERTIES *****
 
 	private Configuration configuration;
-	private Connection connection;
 	private PrintWriter writer;
 	private EventLog eventLog;
 	private Map<String, TableConfig> tableData;
 
 	//***** CONSTRUCTOR *****
 
-	public ExportContext(Configuration configuration, Connection connection, PrintWriter writer) {
+	public ExportContext(Configuration configuration, PrintWriter writer) {
 		this.configuration = configuration;
-		this.connection = connection;
 		this.writer = writer;
 		eventLog = new EventLog(configuration.getLogFile());
 		tableData = configuration.getTableFilter().getTablesForExport(this);
@@ -74,6 +73,7 @@ public class ExportContext {
 	}
 
 	public <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object...params) {
+		Connection connection = null;
 		try {
 			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("SQL: " + sql + (params != null && params.length > 0 ? " [" + Util.toString(params) + "]" : ""));
@@ -85,6 +85,7 @@ public class ExportContext {
 					return ps;
 				}
 			};
+			connection = DbUtil.openConnection(configuration);
 			T result =  runner.query(connection, sql, handler, params);
 			if (getConfiguration().getLogSql() == Boolean.TRUE) {
 				log("RESULT: " + result);
@@ -93,6 +94,9 @@ public class ExportContext {
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Unable to execute query: " + sql, e);
+		}
+		finally {
+			DbUtil.closeConnection(connection);
 		}
 	}
 
@@ -104,12 +108,17 @@ public class ExportContext {
 		if (getConfiguration().getLogSql() == Boolean.TRUE) {
 			log("UPDATE: " + query);
 		}
-		QueryRunner qr = new QueryRunner();
+		Connection connection = null;
 		try {
+			connection = DbUtil.openConnection(configuration);
+			QueryRunner qr = new QueryRunner();
 			qr.update(connection, query);
 		}
 		catch (SQLException e) {
 			throw new RuntimeException("Unable to execute query: " + query, e);
+		}
+		finally {
+			DbUtil.closeConnection(connection);
 		}
 	}
 
@@ -194,14 +203,6 @@ public class ExportContext {
 
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
-	}
-
-	public Connection getConnection() {
-		return connection;
-	}
-
-	public void setConnection(Connection connection) {
-		this.connection = connection;
 	}
 
 	public PrintWriter getWriter() {

@@ -18,6 +18,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.openmrs.contrib.databaseexporter.ColumnValue;
+import org.openmrs.contrib.databaseexporter.Configuration;
 import org.openmrs.contrib.databaseexporter.DatabaseCredentials;
 import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableMetadata;
@@ -39,7 +40,8 @@ import java.util.Set;
 
 public class DbUtil {
 
-	public static Connection openConnection(DatabaseCredentials credentials) {
+	public static Connection openConnection(Configuration config) {
+		DatabaseCredentials credentials = config.getSourceDatabaseCredentials();
 		try {
 			DbUtils.loadDriver(credentials.getDriver());
 			return DriverManager.getConnection(credentials.getUrl(), credentials.getUser(), credentials.getPassword());
