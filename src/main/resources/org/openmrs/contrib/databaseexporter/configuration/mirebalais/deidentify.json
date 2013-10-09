@@ -10,6 +10,8 @@
 	"rowTransforms": [
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
+			"systemIdReplacement": "${user_id}",
+			"usernameReplacement": "user${user_id}",
 			"passwordReplacement": "Test1234",
 			"usernamesToPreserve": ["mseaton","scheduler"]
 		},

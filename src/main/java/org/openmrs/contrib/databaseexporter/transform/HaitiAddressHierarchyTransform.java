@@ -38,12 +38,12 @@ public class HaitiAddressHierarchyTransform extends StructuredAddressTransform {
 
 	@Override
 	public boolean canTransform(String tableName, ExportContext context) {
-		return tableName.equals("address_hierarchy");
+		return tableName.equals("address_hierarchy_entry");
 	}
 
 	// Remove all existing rows from the address_hierarchy_entry table
 	public boolean transformRow(TableRow row, ExportContext context) {
-		if (row.getTableName().equals("address_hierarchy")) {
+		if (row.getTableName().equals("address_hierarchy_entry")) {
 			return false;
 		}
 		return true;
@@ -52,7 +52,7 @@ public class HaitiAddressHierarchyTransform extends StructuredAddressTransform {
 	@Override
 	public List<TableRow> postProcess(String tableName, ExportContext context) {
 		List<TableRow> rows = new ArrayList<TableRow>();
-		if (tableName.equals("address_hierarchy")) {
+		if (tableName.equals("address_hierarchy_entry")) {
 			int entryNum = 0;
 			Map<String, Integer> recordedEntries = new HashMap<String, Integer>();
 			for (int i=0; i<getReplacements().size(); i++) {
