@@ -38,6 +38,22 @@ public class DatabaseExporterTest {
 	}
 
 	@Test
+	public void shouldExportSmallPatientsRwandaData() throws Exception {
+		List<String> config = new ArrayList<String>();
+		config.add("removeSyncData");
+		config.add("rwanda/deidentify");
+		config.add("rwanda/trimArchiveData");
+		config.add("rwanda/trimPatientsSmall");
+		config.add("rwanda/trimUsers");
+		config.add("rwanda/trimProviders");
+		config.add("-localDbName=openmrs_rwink");
+		config.add("-user=openmrs");
+		config.add("-password=openmrs");
+		config.add("-logSql=true");
+		DatabaseExporter.main(config.toArray(new String[] {}));
+	}
+
+	@Test
 	public void shouldExportMaximumRwandaData() throws Exception {
 		List<String> config = new ArrayList<String>();
 		config.add("-localDbName=openmrs_rwink");
