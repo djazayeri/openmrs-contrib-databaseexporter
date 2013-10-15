@@ -44,8 +44,6 @@ public class DatabaseExporterTest {
 		config.add("rwanda/deidentify");
 		config.add("rwanda/trimArchiveData");
 		config.add("rwanda/trimPatientsSmall");
-		config.add("rwanda/trimUsers");
-		config.add("rwanda/trimProviders");
 		config.add("-localDbName=openmrs_rwink");
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");
