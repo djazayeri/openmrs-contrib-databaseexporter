@@ -132,6 +132,7 @@ public class ExportContext {
 			if (tempTableName == null) {
 				tempTableName = TEMPORARY_TABLE_PREFIX + sourceTable+"_"+temporaryTableSet.size();
 				log("Preparing temporary table " + tempTableName);
+				executeUpdate("drop table if exists " + tempTableName);
 				executeUpdate("create table " + tempTableName + " (id integer not null primary key)");
 				temporaryTableSet.put(tableAndColumn, tempTableName);
 			}

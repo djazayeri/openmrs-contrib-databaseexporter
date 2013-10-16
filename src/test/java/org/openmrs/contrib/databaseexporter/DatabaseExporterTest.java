@@ -47,7 +47,7 @@ public class DatabaseExporterTest {
 		config.add("-localDbName=openmrs_rwink");
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");
-		config.add("-logSql=true");
+		config.add("-logSql=false");
 		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 

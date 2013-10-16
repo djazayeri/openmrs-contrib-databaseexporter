@@ -14,8 +14,11 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.query.AllLocationQuery;
+import org.openmrs.contrib.databaseexporter.query.AllProviderQuery;
 import org.openmrs.contrib.databaseexporter.query.LocationIdentificationQuery;
 import org.openmrs.contrib.databaseexporter.query.LocationQuery;
+import org.openmrs.contrib.databaseexporter.query.ProviderQuery;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
 import java.util.ArrayList;
@@ -40,7 +43,11 @@ public class LocationFilter extends RowFilter {
 	@Override
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
-		for (LocationQuery q : getQueries()) {
+		List<LocationQuery> l = getQueries();
+		if (l.isEmpty()) {
+			l.add(new AllLocationQuery());
+		}
+		for (LocationQuery q : l) {
 			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}

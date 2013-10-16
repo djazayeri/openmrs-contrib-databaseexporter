@@ -14,6 +14,7 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.query.AllProviderQuery;
 import org.openmrs.contrib.databaseexporter.query.ProviderQuery;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
@@ -39,7 +40,11 @@ public class ProviderFilter extends RowFilter {
 	@Override
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
-		for (ProviderQuery q : getQueries()) {
+		List<ProviderQuery> l = getQueries();
+		if (l.isEmpty()) {
+			l.add(new AllProviderQuery());
+		}
+		for (ProviderQuery q : l) {
 			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}

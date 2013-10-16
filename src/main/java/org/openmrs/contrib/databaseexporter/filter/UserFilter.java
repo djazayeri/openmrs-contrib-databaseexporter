@@ -14,6 +14,7 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.query.AllUserQuery;
 import org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery;
 import org.openmrs.contrib.databaseexporter.query.UserQuery;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
@@ -40,7 +41,11 @@ public class UserFilter extends RowFilter {
 	@Override
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
-		for (UserQuery q : getQueries()) {
+		List<UserQuery> l = getQueries();
+		if (l.isEmpty()) {
+			l.add(new AllUserQuery());
+		}
+		for (UserQuery q : l) {
 			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}

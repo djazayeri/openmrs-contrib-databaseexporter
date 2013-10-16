@@ -17,6 +17,7 @@ import org.openmrs.contrib.databaseexporter.ExportContext;
 import org.openmrs.contrib.databaseexporter.TableRow;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,6 +26,10 @@ import java.util.List;
  * via rowFilters are re-associated with other, valid data, if possible
  */
 public class ForeignKeyTransform extends RowTransform {
+
+	public static final List<String> KEYS_NOT_TO_TRANSFORM = Arrays.asList(
+		"notification_alert_recipient.user_id"
+	);
 
 	//***** PROPERTIES *****
 
@@ -59,8 +64,13 @@ public class ForeignKeyTransform extends RowTransform {
 				List<Integer> validValues =  getValidValues(context);
 				if (validValues != null && !validValues.isEmpty()) {
 					if (!validValues.contains(row.getRawValue(columnName))) {
-						Object replacementValue = Util.getRandomElementFromList(validValues);
-						row.setRawValue(columnName, replacementValue);
+						if (KEYS_NOT_TO_TRANSFORM.contains(tabCol)) {
+							return false;
+						}
+						else {
+							Object replacementValue = Util.getRandomElementFromList(validValues);
+							row.setRawValue(columnName, replacementValue);
+						}
 					}
 				}
 			}
