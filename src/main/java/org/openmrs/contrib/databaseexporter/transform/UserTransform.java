@@ -48,7 +48,8 @@ public class UserTransform extends RowTransform {
 		// If the row will be kept, de-identify user data if specified
 		if (row.getTableName().equals("users")) {
 			Object user = Util.nvl(row.getRawValue("username"), row.getRawValue("system_id"));
-			if (!getUsernamesToPreserve().contains(user)) {
+
+			if (!getUsernamesToPreserve().contains(user) && !"admin".equals(user) && !"daemon".equals(user)) {
 				if (systemIdReplacement != null) {
 					row.setRawValue("system_id", Util.evaluateExpression(systemIdReplacement, row));
 				}
@@ -96,8 +97,6 @@ public class UserTransform extends RowTransform {
 	public Set<String> getUsernamesToPreserve() {
 		if (usernamesToPreserve == null) {
 			usernamesToPreserve = new HashSet<String>();
-			usernamesToPreserve.add("admin");
-			usernamesToPreserve.add("daemon");
 		}
 		return usernamesToPreserve;
 	}
