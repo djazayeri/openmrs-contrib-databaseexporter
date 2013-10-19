@@ -1,45 +1,42 @@
 {
-	"rowFilters": [
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientFilter",
-			"queries": [
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientAgeQuery",
-					"numberPerAgeRange": 100,
-					"ageRanges": [
-						{"maxAge": 2},
-						{"minAge": 3, "maxAge": 10},
-						{"minAge": 11, "maxAge": 15},
-						{"minAge": 16, "maxAge": 30},
-						{"minAge": 31, "maxAge": 60},
-						{"minAge": 61}
-					]
-				},
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientEncounterQuery",
-					"numberPerType": 50,
-					"numberPerForm": 50,
-					"order": "NUM_OBS_DESC"
-				},
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientProgramEnrollmentQuery",
-					"numberActivePerProgram": 100,
-					"numberCompletedPerProgram": 50
-				},
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientRelationshipQuery",
-					"numberPerType": 50
-				},
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdentifierQuery",
-					"numberPerType": 100
-				},
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.PatientVitalStatusQuery",
-					"numberAlive": 100,
-					"numberDead": 100
-				}
-			]
-		}
-	]
+	"patientFilter": {
+		"queries": [
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientAgeQuery",
+				"numberPerAgeRange": 100,
+				"ageRanges": [
+					{"maxAge": 2},
+					{"minAge": 3, "maxAge": 10},
+					{"minAge": 11, "maxAge": 15},
+					{"minAge": 16, "maxAge": 30},
+					{"minAge": 31, "maxAge": 60},
+					{"minAge": 61}
+				]
+			},
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientEncounterQuery",
+				"numberPerType": 50,
+				"numberPerForm": 50,
+				"order": "NUM_OBS_DESC"
+			},
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientProgramEnrollmentQuery",
+				"numberActivePerProgram": 100,
+				"numberCompletedPerProgram": 50
+			},
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientRelationshipQuery",
+				"numberPerType": 50
+			},
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdentifierQuery",
+				"numberPerType": 100
+			},
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientVitalStatusQuery",
+				"numberAlive": 100,
+				"numberDead": 100
+			}
+		]
+	}
 }

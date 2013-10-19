@@ -1,11 +1,6 @@
 {
 	"batchSize":10000,
 	"targetDirectory": ".",
-	"rowFilters": [
-		{"@class" : "org.openmrs.contrib.databaseexporter.filter.PatientFilter"},
-		{"@class" : "org.openmrs.contrib.databaseexporter.filter.UserFilter"},
-		{"@class" : "org.openmrs.contrib.databaseexporter.filter.ProviderFilter"}
-	],
 	"dependencyFilters": {
 		"patient": {
 			"tableName": "patient",

@@ -1,0 +1,21 @@
+{
+	"tableFilter": {
+		"excludeSchema": [
+			"*"
+		],
+		"includeData": [
+			"person","person_name","person_address","person_attribute","relationship",
+			"patient","patient_identifier","visit","visit_attribute","encounter","encounter_provider","obs",
+			"orders","drug_order","orderextension_order","orderextension_order_group","patient_program","patient_state"
+		],
+		"includeDataIfSchemaExcluded":true
+	},
+	"patientFilter": {
+		"queries": [
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.PatientIdQuery",
+				"ids": [83292]
+			}
+		]
+	}
+}

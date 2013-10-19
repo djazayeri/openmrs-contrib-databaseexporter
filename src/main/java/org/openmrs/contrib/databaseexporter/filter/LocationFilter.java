@@ -44,7 +44,7 @@ public class LocationFilter extends RowFilter {
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		List<LocationQuery> l = getQueries();
-		if (l.isEmpty()) {
+		if (l.isEmpty() && context.getTableData().get("location").isExportData()) {
 			l.add(new AllLocationQuery());
 		}
 		for (LocationQuery q : l) {

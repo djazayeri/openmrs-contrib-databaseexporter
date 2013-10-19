@@ -27,7 +27,6 @@ import java.util.Set;
 /**
  * Abstract class the defines the patients that should be included in a PatientFilter
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class RowFilter {
 
 	//***** PROPERTIES *****

@@ -17,7 +17,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.IOUtils;
 import org.openmrs.contrib.databaseexporter.filter.DependencyFilter;
+import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
+import org.openmrs.contrib.databaseexporter.filter.ProviderFilter;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.filter.UserFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.util.DbUtil;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
@@ -115,11 +118,16 @@ public class DatabaseExporter {
 			DbUtil.writeExportHeader(context);
 
 			try {
-				for (RowFilter filter : configuration.getRowFilters()) {
+				List<RowFilter> rowFilters = new ArrayList<RowFilter>();
+				rowFilters.add(Util.nvl(configuration.getPatientFilter(), new PatientFilter()));
+				rowFilters.add(Util.nvl(configuration.getUserFilter(), new UserFilter()));
+				rowFilters.add(Util.nvl(configuration.getProviderFilter(), new ProviderFilter()));
+
+				for (RowFilter filter : rowFilters) {
 					context.log("Applying filter: " + filter.getClass().getSimpleName());
 					filter.filter(context);
 				}
-				for (RowFilter filter : configuration.getRowFilters()) {
+				for (RowFilter filter : rowFilters) {
 					for (DependencyFilter df : filter.getDependencyFilters()) {
 						df.filter(context);
 					}
@@ -144,7 +152,7 @@ public class DatabaseExporter {
 						String query = context.buildQuery(table, context);
 
 						context.log("Determining applicable transforms for table");
-						for (RowFilter filter : configuration.getRowFilters()) {
+						for (RowFilter filter : rowFilters) {
 							tableTransforms.putAll(table, filter.getTransforms());
 						}
 

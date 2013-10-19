@@ -35,6 +35,7 @@ public class TableFilter {
 	private List<String> excludeSchema;
 	private List<String> includeData;
 	private List<String> excludeData;
+	private boolean includeDataIfSchemaExcluded = false;
 
 	//***** CONSTRUCTORS *****
 
@@ -54,6 +55,7 @@ public class TableFilter {
 
 			boolean exportData = getIncludeData().isEmpty() || Util.matchesAnyPattern(tableName, getIncludeData());
 			exportData = exportData && !Util.matchesAnyPattern(tableName, getExcludeData());
+			exportData = exportData && (includeDataIfSchemaExcluded || exportSchema);
 
 			config.setExportSchema(exportSchema);
 			config.setExportData(exportData);
@@ -107,5 +109,13 @@ public class TableFilter {
 
 	public void setExcludeData(List<String> excludeData) {
 		this.excludeData = excludeData;
+	}
+
+	public boolean isIncludeDataIfSchemaExcluded() {
+		return includeDataIfSchemaExcluded;
+	}
+
+	public void setIncludeDataIfSchemaExcluded(boolean includeDataIfSchemaExcluded) {
+		this.includeDataIfSchemaExcluded = includeDataIfSchemaExcluded;
 	}
 }

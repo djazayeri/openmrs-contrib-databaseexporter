@@ -41,7 +41,7 @@ public class ProviderFilter extends RowFilter {
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		List<ProviderQuery> l = getQueries();
-		if (l.isEmpty()) {
+		if (l.isEmpty() && context.getTableData().get("provider").isExportData()) {
 			l.add(new AllProviderQuery());
 		}
 		for (ProviderQuery q : l) {

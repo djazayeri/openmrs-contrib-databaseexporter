@@ -18,6 +18,9 @@ import org.junit.Test;
 import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
 import org.openmrs.contrib.databaseexporter.filter.RowFilter;
 import org.openmrs.contrib.databaseexporter.filter.UserFilter;
+import org.openmrs.contrib.databaseexporter.query.PatientQuery;
+import org.openmrs.contrib.databaseexporter.query.UserIdentificationQuery;
+import org.openmrs.contrib.databaseexporter.query.UserQuery;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
 import java.util.List;
@@ -65,10 +68,14 @@ public class UtilTest {
 		Assert.assertEquals("hl7_in_*", excludeData.get(0));
 		Assert.assertEquals("sync_*", excludeData.get(1));
 
-		List<RowFilter> rowFilters = configuration.getRowFilters();
-		Assert.assertEquals(2, rowFilters.size());
-		Assert.assertEquals(UserFilter.class, rowFilters.get(0).getClass());
-		Assert.assertEquals(PatientFilter.class, rowFilters.get(1).getClass());
+		List<UserQuery> queries = configuration.getUserFilter().getQueries();
+		Assert.assertEquals(2, queries.size());
+		UserIdentificationQuery q1 = (UserIdentificationQuery) queries.get(0);
+		UserIdentificationQuery q2 = (UserIdentificationQuery) queries.get(1);
+		Assert.assertEquals(1, q1.getUserNames().size());
+		Assert.assertEquals("mseaton", q1.getUserNames().iterator().next());
+		Assert.assertEquals(1, q2.getUserNames().size());
+		Assert.assertEquals("test", q2.getUserNames().iterator().next());
 		Assert.assertEquals(5, configuration.getRowTransforms().size());
 	}
 }

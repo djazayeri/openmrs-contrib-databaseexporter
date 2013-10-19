@@ -1,13 +1,10 @@
 {
-	"rowFilters": [
-		{
-			"@class" : "org.openmrs.contrib.databaseexporter.filter.ProviderFilter",
-			"queries": [
-				{
-					"@class" : "org.openmrs.contrib.databaseexporter.query.ProviderIdQuery",
-					"ids": [1,2,3,4,5]
-				}
-			]
-		}
-	]
+	"providerFilter": {
+		"queries": [
+			{
+				"@class" : "org.openmrs.contrib.databaseexporter.query.ProviderIdQuery",
+				"ids": [1,2,3,4,5]
+			}
+		]
+	}
 }

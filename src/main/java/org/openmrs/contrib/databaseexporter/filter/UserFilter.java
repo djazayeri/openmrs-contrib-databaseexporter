@@ -42,7 +42,7 @@ public class UserFilter extends RowFilter {
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
 		List<UserQuery> l = getQueries();
-		if (l.isEmpty()) {
+		if (l.isEmpty() && context.getTableData().get("users").isExportData()) {
 			l.add(new AllUserQuery());
 		}
 		for (UserQuery q : l) {

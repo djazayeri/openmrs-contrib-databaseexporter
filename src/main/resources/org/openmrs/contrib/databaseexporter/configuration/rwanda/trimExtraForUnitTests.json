@@ -1,0 +1,20 @@
+{
+	"tableFilter": {
+		"excludeSchema": [
+			"dataquality_tally", "form2program_*", "groovy_scripts", "patientflags_*",
+			"register_type", "registers", "restrictbyrole_*", "role_restriction",
+			"usagestatistics_*", "versionedfileupload_*"
+		],
+		"excludeData": [
+			"field", "form_field", "reporting_report_*", "serialized_object", "tribe"
+		]
+	},
+	"rowTransforms": [
+		{
+			"@class" : "org.openmrs.contrib.databaseexporter.transform.SimpleReplacementTransform",
+			"replacements": {
+				"htmlformentry_html_form.xml_data": "<htmlform>Removed for testing</htmlform>"
+			}
+		}
+	]
+}

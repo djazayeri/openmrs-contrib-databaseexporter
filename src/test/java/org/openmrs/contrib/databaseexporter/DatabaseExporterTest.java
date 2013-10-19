@@ -22,19 +22,34 @@ import java.util.List;
 public class DatabaseExporterTest {
 
 	@Test
-	public void shouldExportMinimumRwandaData() throws Exception {
+	public void shouldExportMetadataForUnitTests() throws Exception {
 		List<String> config = new ArrayList<String>();
 		config.add("rwanda/deidentify");
-		config.add("rwanda/trimArchiveData");
+		config.add("rwanda/trimExtraForUnitTests");
 		config.add("removeSyncData");
 		config.add("removeAllPatients");
 		config.add("rwanda/trimUsers");
 		config.add("rwanda/trimProviders");
-		config.add("-localDbName=openmrs_rwink");
-		config.add("-user=openmrs");
-		config.add("-password=openmrs");
-		config.add("-logSql=true");
-		DatabaseExporter.main(config.toArray(new String[] {}));
+		exportForRwanda(config);
+	}
+
+	@Test
+	public void shouldExportPatientsForUnitTests() throws Exception {
+		List<String> config = new ArrayList<String>();
+		config.add("rwanda/deidentify");
+		config.add("rwanda/keepPatientsForUnitTests");
+		exportForRwanda(config);
+	}
+
+	@Test
+	public void shouldExportMinimumRwandaData() throws Exception {
+		List<String> config = new ArrayList<String>();
+		config.add("rwanda/deidentify");
+		config.add("removeSyncData");
+		config.add("removeAllPatients");
+		config.add("rwanda/trimUsers");
+		config.add("rwanda/trimProviders");
+		exportForRwanda(config);
 	}
 
 	@Test
@@ -42,22 +57,23 @@ public class DatabaseExporterTest {
 		List<String> config = new ArrayList<String>();
 		config.add("removeSyncData");
 		config.add("rwanda/deidentify");
-		config.add("rwanda/trimArchiveData");
 		config.add("rwanda/trimPatientsSmall");
-		config.add("-localDbName=openmrs_rwink");
-		config.add("-user=openmrs");
-		config.add("-password=openmrs");
-		config.add("-logSql=false");
-		DatabaseExporter.main(config.toArray(new String[] {}));
+		exportForRwanda(config);
 	}
 
 	@Test
 	public void shouldExportMaximumRwandaData() throws Exception {
 		List<String> config = new ArrayList<String>();
-		config.add("-localDbName=openmrs_rwink");
+		exportForRwanda(config);
+	}
+
+	public void exportForRwanda(List<String> config) throws Exception {
 		config.add("rwanda/trimArchiveData");
+		config.add("-localDbName=openmrs_rwink");
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");
+		config.add("-logSql=false");
+		config.add("-targetDirectory=" + System.getProperty("java.io.tmpdir"));
 		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 
@@ -71,4 +87,3 @@ public class DatabaseExporterTest {
 		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 }
-

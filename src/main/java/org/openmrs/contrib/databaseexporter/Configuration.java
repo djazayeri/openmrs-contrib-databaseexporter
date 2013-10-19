@@ -15,8 +15,10 @@ package org.openmrs.contrib.databaseexporter;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.contrib.databaseexporter.filter.DependencyFilter;
-import org.openmrs.contrib.databaseexporter.filter.RowFilter;
+import org.openmrs.contrib.databaseexporter.filter.PatientFilter;
+import org.openmrs.contrib.databaseexporter.filter.ProviderFilter;
 import org.openmrs.contrib.databaseexporter.filter.TableFilter;
+import org.openmrs.contrib.databaseexporter.filter.UserFilter;
 import org.openmrs.contrib.databaseexporter.transform.RowTransform;
 import org.openmrs.contrib.databaseexporter.util.Util;
 
@@ -39,7 +41,10 @@ public class Configuration {
 	private Boolean logSql;
 
 	private TableFilter tableFilter;
-	private List<RowFilter> rowFilters;
+	private PatientFilter patientFilter;
+	private UserFilter userFilter;
+	private ProviderFilter providerFilter;
+
 	private List<RowTransform> rowTransforms;
 	private Map<String, DependencyFilter> dependencyFilters;
 
@@ -123,15 +128,28 @@ public class Configuration {
 		this.tableFilter = tableFilter;
 	}
 
-	public List<RowFilter> getRowFilters() {
-		if (rowFilters == null) {
-			rowFilters = new ArrayList<RowFilter>();
-		}
-		return rowFilters;
+	public PatientFilter getPatientFilter() {
+		return patientFilter;
 	}
 
-	public void setRowFilters(List<RowFilter> rowFilters) {
-		this.rowFilters = rowFilters;
+	public void setPatientFilter(PatientFilter patientFilter) {
+		this.patientFilter = patientFilter;
+	}
+
+	public UserFilter getUserFilter() {
+		return userFilter;
+	}
+
+	public void setUserFilter(UserFilter userFilter) {
+		this.userFilter = userFilter;
+	}
+
+	public ProviderFilter getProviderFilter() {
+		return providerFilter;
+	}
+
+	public void setProviderFilter(ProviderFilter providerFilter) {
+		this.providerFilter = providerFilter;
 	}
 
 	public List<RowTransform> getRowTransforms() {

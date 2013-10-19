@@ -1,8 +1,8 @@
 {
 	"tableFilter": {
 		"excludeData": [
-			"formentry*", "hl7_in_*", "idgen_log_entry",
-			"metadatasharing_*", "notification_alert", "notifcation_alert_recipient",
+			"concept_word", "formentry*", "hl7_in_*", "idgen_log_entry",
+			"metadatasharing_*", "notification_alert", "notification_alert_recipient",
 			"person_merge_log", "sync_import", "sync_record", "sync_server_record"
 		]
 	},
