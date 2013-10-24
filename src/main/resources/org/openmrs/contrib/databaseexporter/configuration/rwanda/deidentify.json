@@ -22,7 +22,7 @@
 				"dataqualitytools.weeklyReport.emailTo": "",
 				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
 				"namephonetics.familyNameStringEncoder": "Double Metaphone",
-				"registration.defaultLocationCode": "XXX",
+				"registration.defaultLocationCode": "999",
 				"scheduler.password": "Test1234",
 				"sync.admin_email": "",
 				"sync.server_name": "TEST",
