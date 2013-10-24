@@ -2,9 +2,10 @@
 	"tableFilter": {
 		"excludeData": [
 			"cohort", "cohort_member", "hl7_in_*", "idgen_log_entry", "name_phonetics", "person_merge_log",
-			"emr_paper_record_request","emr_paper_record_merge_request",
+			"emr_paper_record_*",
 			"notification_alert", "notification_alert_recipient",
-			"pacsintegration_outbound_queue", "patientregistration_user_activity"
+			"pacsintegration_outbound_queue", "patientregistration_user_activity",
+			"appointmentscheduling_*"
 		]
 	},
 	"rowTransforms": [
