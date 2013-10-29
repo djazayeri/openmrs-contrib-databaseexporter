@@ -80,10 +80,12 @@ public class DatabaseExporterTest {
 	@Test
 	public void shouldExportDeidentifiedMirebalaisData() throws Exception {
 		List<String> config = new ArrayList<String>();
-		config.add("-localDbName=openmrs_mirebalais");
 		config.add("mirebalais/deidentify");
+		config.add("-localDbName=openmrs_mirebalais");
 		config.add("-user=openmrs");
 		config.add("-password=openmrs");
+		config.add("-logSql=false");
+		config.add("-targetDirectory=" + System.getProperty("java.io.tmpdir"));
 		DatabaseExporter.main(config.toArray(new String[] {}));
 	}
 }

@@ -14,6 +14,7 @@
 package org.openmrs.contrib.databaseexporter.filter;
 
 import org.openmrs.contrib.databaseexporter.ExportContext;
+import org.openmrs.contrib.databaseexporter.query.AllPatientQuery;
 import org.openmrs.contrib.databaseexporter.query.PatientQuery;
 import org.openmrs.contrib.databaseexporter.util.ListMap;
 
@@ -39,7 +40,11 @@ public class PatientFilter extends RowFilter {
 	@Override
 	public ListMap<String, Integer> getIds(ExportContext context) {
 		ListMap<String, Integer> ret = new ListMap<String, Integer>();
-		for (PatientQuery q : getQueries()) {
+		List<PatientQuery> l = getQueries();
+		if (l.isEmpty() && context.getTableData().get("patient").isExportData()) {
+			l.add(new AllPatientQuery());
+		}
+		for (PatientQuery q : l) {
 			context.log("Running query: " + q);
 			ret.putAll(q.getColumnName(), q.getIds(context));
 		}
