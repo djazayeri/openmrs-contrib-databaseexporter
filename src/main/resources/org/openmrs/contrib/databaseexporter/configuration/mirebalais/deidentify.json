@@ -72,7 +72,7 @@
 				"ZL EMR ID": {
 					"@class" : "org.openmrs.contrib.databaseexporter.generator.LuhnGenerator",
 					"firstIdentifierBase": "00001",
-					"baseCharacterSet": "0123456789ACEFHJKMNPUWXY"
+					"baseCharacterSet": "0123456789ACDEFGHJKLMNPRTUVWXY"
 				}
 			}
 		}
