@@ -65,7 +65,7 @@
 			"replacementGenerators": {
 				"Nimewo Dosye": {
 					"@class" : "org.openmrs.contrib.databaseexporter.generator.SequentialGenerator",
-					"firstIdentifierBase": "999001",
+					"firstIdentifierBase": "500001",
 					"prefix": "A",
 					"baseCharacterSet": "0123456789"
 				},
