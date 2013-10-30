@@ -18,8 +18,8 @@
 		{
 			"@class" : "org.openmrs.contrib.databaseexporter.transform.GlobalPropertyTransform",
 			"replacements": {
-				"pacsintegration.listenerUsername": "test",
-				"pacsintegration.listenerPassword": "test",
+				"pacsintegration.listenerUsername": "admin",
+				"pacsintegration.listenerPassword": "Test1234",
 				"metadatasharing.urlPrefix": "http://localhost:8080/openmrs",
 				"namephonetics.familyNameStringEncoder": "Double Metaphone",
 				"scheduler.password": "Test1234"
