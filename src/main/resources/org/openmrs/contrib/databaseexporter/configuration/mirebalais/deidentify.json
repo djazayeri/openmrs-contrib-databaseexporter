@@ -1,4 +1,9 @@
 {
+	"sourceDatabaseCredentials": {
+		"url": "jdbc:mysql://localhost:3306/mirebalaisprod?autoReconnect=true&sessionVariables=storage_engine=InnoDB&useUnicode=true&characterEncoding=UTF-8",
+		"user": "mirebalais_user",
+		"password": "fill-me-in"
+	},
 	"tableFilter": {
 		"excludeData": [
 			"cohort", "cohort_member", "hl7_in_*", "idgen_log_entry", "name_phonetics", "person_merge_log",
@@ -7,6 +12,28 @@
 			"pacsintegration_outbound_queue", "patientregistration_user_activity"
 		]
 	},
+    "patientFilter": {
+        "queries": [
+            {
+                "@class" : "org.openmrs.contrib.databaseexporter.query.PatientAgeQuery",
+                "numberPerAgeRange": 100,
+                "ageRanges": [
+                    {"maxAge": 2},
+                    {"minAge": 3, "maxAge": 10},
+                    {"minAge": 11, "maxAge": 15},
+                    {"minAge": 16, "maxAge": 30},
+                    {"minAge": 31, "maxAge": 60},
+                    {"minAge": 61}
+                ]
+            },
+            {
+                "@class" : "org.openmrs.contrib.databaseexporter.query.PatientEncounterQuery",
+                "numberPerType": 100,
+                "numberPerForm": 0,
+                "order": "NUM_OBS_DESC"
+            }
+        ]
+    },
 	"rowTransforms": [
 		{
 			"@class": "org.openmrs.contrib.databaseexporter.transform.UserTransform",
